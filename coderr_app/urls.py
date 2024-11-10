@@ -7,7 +7,7 @@ from profile_app.views import BusinessProfileView, CustomerProfileView
 # SETTINGS.PY die APPS ergänzen
 
 urlpatterns = [ 
-    path('offers/', include('offers_app.urls')),
+    path('offers/', include('offers_app.urls')),   
     path('offerdetails/', OfferDetailView.as_view()),
     path('orders/', include('orders_app.urls')),
     path('order-count/<int:pk>', OrderCountView.as_view()),
