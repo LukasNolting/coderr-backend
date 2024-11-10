@@ -48,7 +48,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'coderr_app'
+    'coderr_app',
+    'auth_app',
+    'offers_app',
+    'orders_app',
+    'profile_app',
+    'review_app'
 ]
 
 MIDDLEWARE = [
