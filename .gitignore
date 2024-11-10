@@ -2,7 +2,7 @@ config.bat
 up.bat
 make.bat
 Makefile
-
+/staticfiles/
 static/
 /static/*
 /static
