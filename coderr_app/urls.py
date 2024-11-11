@@ -8,7 +8,7 @@ from profile_app.views import BusinessProfileView, CustomerProfileView
 
 urlpatterns = [ 
     path('offers/', include('offers_app.urls')),   
-    path('offerdetails/', OfferDetailView.as_view()),
+    path('offerdetails/<int:pk>', OfferDetailView.as_view()),
     path('orders/', include('orders_app.urls')),
     path('order-count/<int:pk>', OrderCountView.as_view()),
     path('completed-order-count/<int:pk>', CompletedOrderCountView.as_view()),
