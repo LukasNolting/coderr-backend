@@ -3,6 +3,7 @@ from .views import BaseInfoView
 from offers_app.views import OfferDetailView
 from orders_app.views import OrderCountView, CompletedOrderCountView
 from profile_app.views import BusinessProfileView, CustomerProfileView
+from auth_app.views import LoginView, RegisterView
 
 # SETTINGS.PY die APPS ergänzen
 
@@ -17,4 +18,6 @@ urlpatterns = [
     path('profiles/business/', BusinessProfileView.as_view()),
     path('profiles/customer/', CustomerProfileView.as_view()),
     path('reviews/', include('review_app.urls')),
+    path('login/', LoginView.as_view()),
+    path('registration/', RegisterView.as_view()),
 ]
