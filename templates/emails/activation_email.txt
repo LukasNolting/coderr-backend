@@ -1,0 +1,7 @@
+Dear {{ user.username }},
+
+Thank you for registering with {{ domain_url }}.
+
+To complete your registration and verify your email address, please click the link below:
+
+{{ activation_url }} Activate account

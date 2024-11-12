@@ -11,7 +11,7 @@ class CustomUser(AbstractUser):
         ('Customer', 'Customer'),
         ('Seller', 'Seller'),
     ]
-    username = models.CharField(max_length=30, unique=False, null=True)
+    username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
     category = models.CharField(
         max_length=20,
@@ -19,9 +19,9 @@ class CustomUser(AbstractUser):
         blank=False,
         null=False
     )    
-    is_active = models.BooleanField(default=True)
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    is_active = models.BooleanField(default=False)
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
 
     def __str__(self):
         """

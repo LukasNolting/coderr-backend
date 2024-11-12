@@ -1,18 +1,28 @@
 from django.http import JsonResponse
 from rest_framework.views import APIView
+from datetime import timedelta
 from django.views import View
+from django.utils import timezone, http
+from django.urls import reverse
 from rest_framework.response import Response
+from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator as token_generator
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model, tokens
-from .models import CustomUser
+from .models import CustomUser, PasswordReset
 from .serializers import UserSerializer, ResetPasswordRequestSerializer
 from django.conf import settings
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
+import os
+from django.template.loader import render_to_string
+from dotenv import load_dotenv
+from django.core.mail import EmailMultiAlternatives
 
+
+load_dotenv()
 
 class LoginView(View):
     def post(self, request):
@@ -84,6 +94,60 @@ class RequestPasswordReset(APIView):
         else:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
+
+class PasswordResetView(APIView):
+    permission_classes = []
+
+    def get(self, request, token):
+        """
+        Check if the given token is valid and not expired.
+
+        Args:
+            request (Request): The request object.
+            token (str): The token to check.
+
+        Returns:
+            Response: 200 with {'success': 'Token is valid'} if the token is valid and not expired.
+            Response: 400 with {'error': 'Invalid token'} if the token is not valid.
+            Response: 400 with {'error': 'Token expired'} if the token is expired.
+        """
+        reset_obj = PasswordReset.objects.filter(token=token).first()
+        if not reset_obj:
+            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+        token_lifetime = timedelta(hours=24)
+        if timezone.now() > reset_obj.created_at + token_lifetime:
+            return Response({'error': 'Token expired'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'success': 'Token is valid'}, status=status.HTTP_200_OK)
+
+    def post(self, request, token):
+        """
+        Resets the password for the given user
+
+        Args:
+            request: The request object
+            token: The token from the password reset email
+
+        Returns:
+            A response object with a status code and a message
+        """
+        reset_obj = PasswordReset.objects.filter(token=token).first()
+        if not reset_obj:
+            return Response({'error': 'Invalid token'}, status=400)
+
+        token_lifetime = timedelta(hours=24)
+        if timezone.now() > reset_obj.created_at + token_lifetime:
+            return Response({'error': 'Token expired'}, status=400)
+
+        user = CustomUser.objects.filter(email=reset_obj.email).first()
+        if user:
+            user.set_password(request.data['password'])
+            user.save()
+            reset_obj.delete()
+            return Response({'success': 'Password updated'})
+        else:
+            return Response({'error': 'No user found'}, status=404)
 
 class VerifyTokenView(APIView):
     authentication_classes = [TokenAuthentication]

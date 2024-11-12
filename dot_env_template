@@ -1,4 +1,7 @@
+###### views.py ######
 
+REDIRECT_LOGIN='http://localhost:4200/login'
+REDIRECT_LANDING='http://localhost:4200'
 
 ###### settings.py ######
 

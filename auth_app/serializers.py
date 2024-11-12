@@ -8,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'id']
+        fields = ['email', 'username', 'id']
 
 
 class ResetPasswordRequestSerializer(serializers.Serializer):
