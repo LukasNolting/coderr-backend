@@ -8,8 +8,8 @@ class CustomUser(AbstractUser):
     Username is replaced by email for authentication.
     """
     CATEGORY_CHOICES = [
-        ('Customer', 'Käufer'),
-        ('Seller', 'Anbieter'),
+        ('customer', 'Kunde'),
+        ('business', 'Anbieter'),
     ]
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
