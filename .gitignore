@@ -10,7 +10,7 @@ static/
 media/
 /static/staticfiles/
 /docs
-
+Coderr Dokumentation Endpoints.pdf
 # SQLite DB & Migrations
 **/migrations/**
 !**/migrations
