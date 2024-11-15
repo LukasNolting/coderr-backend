@@ -7,15 +7,21 @@ class CustomUser(AbstractUser):
     CustomUser model extending the default Django User model.
     Username is replaced by email for authentication.
     """
-    CATEGORY_CHOICES = [
+    TYPE_CHOICES = [
         ('customer', 'Kunde'),
         ('business', 'Anbieter'),
     ]
     username = models.CharField(max_length=50, unique=True)
+    file = models.FileField(blank=True, null=True)
+    location = models.CharField(max_length=50, blank=True, null=True)
+    tel = models.CharField(max_length=50, blank=True, null=True)
+    description = models.CharField(max_length=500, blank=True, null=True)
+    working_hours = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(unique=True)
+    created_at = models.DateField(blank=True, null=True)
     type = models.CharField(
         max_length=20,
-        choices=CATEGORY_CHOICES,
+        choices=TYPE_CHOICES,
         blank=False,
         null=False
     )    
