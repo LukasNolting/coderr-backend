@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from django.views import View
 
+
 class ReviewView(View):
     def get(self, request, pk=None):
         if pk:

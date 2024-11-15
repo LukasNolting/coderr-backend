@@ -20,13 +20,32 @@ import os
 from django.template.loader import render_to_string
 from dotenv import load_dotenv
 from django.core.mail import EmailMultiAlternatives
-
+from .serializers import LoginSerializer
 
 load_dotenv()
 
-class LoginView(View):
-    def post(self, request):
-        return JsonResponse({'message': 'Login erfolgreich'})
+class LoginView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handles login requests.
+
+        Args:
+            request (Request): The HTTP request containing the user credentials.
+
+        Returns:
+            Response: A JSON response containing the authentication token if the credentials are valid, otherwise a JSON response with the errors.
+        """
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+          user = serializer.validated_data['user']
+          token, created = Token.objects.get_or_create(user=user)
+          print('token',token)
+          return Response({'token': token.key, 'username': user.username, 'user_id': user.id}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class RegisterView(generics.CreateAPIView):
