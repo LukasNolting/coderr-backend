@@ -12,6 +12,17 @@ from .serializers import OfferSerializer
 from django.core.exceptions import ObjectDoesNotExist
 
 
+from django.db.models import Q
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import status
+from .models import Offer
+from .serializers import OfferSerializer
+
+
 class OfferView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -25,9 +36,38 @@ class OfferView(APIView):
             except Offer.DoesNotExist:
                 return Response({'error': 'Angebot nicht gefunden'}, status=status.HTTP_404_NOT_FOUND)
         else:
+
             offers = Offer.objects.all()
-            serializer = OfferSerializer(offers, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+            creator_id = request.query_params.get('creator_id')
+            if creator_id:
+                offers = offers.filter(user_id=creator_id)
+
+
+            search = request.query_params.get('search')
+            if search:
+                offers = offers.filter(
+                    Q(title__icontains=search) | Q(description__icontains=search)
+                )
+
+
+            max_delivery_time = request.query_params.get('max_delivery_time')
+            if max_delivery_time:
+                offers = offers.filter(details__delivery_time_in_days__lte=max_delivery_time)
+
+
+            ordering = request.query_params.get('ordering', 'updated_at')
+            if ordering in ['updated_at', 'min_price']:
+                offers = offers.order_by(ordering)
+
+
+            paginator = PageNumberPagination()
+            paginator.page_size = 10 
+            result_page = paginator.paginate_queryset(offers, request)
+
+            serializer = OfferSerializer(result_page, many=True)
+            return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
         serializer = OfferSerializer(data=request.data)
