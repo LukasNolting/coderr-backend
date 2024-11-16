@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import ProfileView
+from .views import BusinessProfileView, CustomerProfileView
 
 urlpatterns = [    
-    path('<int:pk>/', ProfileView.as_view()), 
+    path('business/<int:pk>/', BusinessProfileView.as_view()),
+    path('customer/<int:pk>/', CustomerProfileView.as_view()),
 ]
