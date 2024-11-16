@@ -2,6 +2,7 @@ from rest_framework import serializers
 from auth_app.models import CustomUser
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = CustomUser
         fields = [
