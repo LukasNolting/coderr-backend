@@ -7,7 +7,7 @@ class OrderView(View):
         if pk:
             return JsonResponse({'message': f'Details der Bestellung mit ID {pk}'})
         else:
-            return JsonResponse({'message': 'Liste aller Bestellungen'})
+            return JsonResponse({{'message': 'Liste aller Bestellungen'}}) ####TODO Anpassen der Error Message 
 
     def post(self, request):
         return JsonResponse({'message': 'Neue Bestellung erstellt'})
