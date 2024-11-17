@@ -7,3 +7,4 @@ urlpatterns = [
     path('order-count/<int:pk>/', OrderCountAPIView.as_view(), name='order-count'),
     path('completed-order-count/<int:pk>/', CompletedOrderCountAPIView.as_view(), name='completed-order-count'),
 ]
+

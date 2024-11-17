@@ -37,11 +37,12 @@ class OrderAPIView(APIView):
                 "updated_at": order.updated_at,
             }, status=status.HTTP_200_OK)
         else:
-            
             orders = Order.objects.filter(
                 Q(customer_user=request.user) | Q(business_user=request.user)
             ).values("id", "title", "status", "created_at", "updated_at")
             return Response(list(orders), status=status.HTTP_200_OK)
+
+
 
     def post(self, request):
         data = request.data
