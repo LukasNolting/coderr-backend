@@ -7,7 +7,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from auth_app.models import CustomUser
-from .serializers import UserProfileSerializer, UserProfileUpdateSerializer
+from .serializers import UserProfileSerializer, UserProfileUpdateSerializer, BusinessProfileSerializer, CustomProfileSerializer
 
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -32,10 +32,24 @@ class ProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
-class BusinessProfileView(View):
+class BusinessProfileView(APIView):
     def get(self, request):
-        return JsonResponse({'message': 'Profilinformationen für alle Geschäftskunden'})
+        users = CustomUser.objects.all()
+        serializer = BusinessProfileSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-class CustomerProfileView(View):
-    def get(self, request):
-        return JsonResponse({'message': 'Profilinformationen für alle Endkunden'})
+class CustomerProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user = CustomUser.objects.get(pk=request.user.id)
+            serializer = BusinessProfileSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"detail": "Benutzerprofil nicht gefunden."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
