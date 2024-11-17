@@ -7,8 +7,8 @@ from auth_app.views import LoginView, RegisterView
 # SETTINGS.PY die APPS ergänzen
 
 urlpatterns = [ 
-    path('offers/', include('offers_app.urls')),   
-    path('offerdetails/<int:pk>', OfferDetailView.as_view()),
+    path('offers/', include('offers_app.urls')), 
+    path('offerdetails/<int:pk>/', OfferDetailView.as_view(), name='offer-detail-view'),
     path('orders/', include('orders_app.urls')),
     path('base-info/', BaseInfoView.as_view()),
     path('profile/', include('profile_app.urls')),
