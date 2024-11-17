@@ -49,3 +49,4 @@ class CustomProfileSerializer(serializers.ModelSerializer):
             'description', 'working_hours', 'type'
         ]
 
+
