@@ -89,9 +89,9 @@ class RequestPasswordReset(APIView):
             print("reset_url", reset_url)
             relative_reset_url = reset_url.replace('/api', '')
             print("relative_reset_url", relative_reset_url)
-            domain_url = os.getenv('BACKEND_URL')
+            domain_url = os.getenv('REDIRECT_LANDING')
             print("domain_url", domain_url)
-            full_url = f'http://{domain_url}/api{relative_reset_url}'
+            full_url = f'http://{domain_url}/reset-password.html?token={token}'
             print("full_url", full_url)
             subject = "Coderr Passwort zurücksetzen"
             text_content = render_to_string('emails/forgot_password.txt', {
