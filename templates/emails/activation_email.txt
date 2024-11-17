@@ -1,7 +1,11 @@
-Dear {{ user.username }},
+Hallo {{ user.username }},
 
-Thank you for registering with {{ domain_url }}.
+Vielen Dank, dass du dich bei {{ domain_url }} registriert hast.
 
-To complete your registration and verify your email address, please click the link below:
+Klicke bitte auf den folgenden Link, um deinen Account zu aktivieren:
 
-{{ activation_url }} Activate account
+{{ activation_url }} Account aktivieren
+
+Viele Grüße,
+
+Dein Coderr Team
