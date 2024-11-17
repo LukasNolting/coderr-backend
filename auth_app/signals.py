@@ -50,16 +50,17 @@ def send_activation_email(sender, instance, created, **kwargs):
     if created and not instance.is_active:
         token = token_generator.make_token(instance)
         uid = urlsafe_base64_encode(force_bytes(instance.pk))
+        prod_frontend_url = os.getenv('PROD_FRONTEND_URL')
         activation_url = reverse('activate_user', kwargs={'uidb64': uid, 'token': token})
         full_url = f'http://{settings.BACKEND_URL}{activation_url}'
         domain_url = os.getenv('REDIRECT_LANDING')
         text_content = render_to_string(
             "emails/activation_email.txt",
-            context={'user': instance, 'activation_url': full_url, 'domain_url': domain_url},
+            context={'user': instance, 'activation_url': full_url, 'domain_url': domain_url, 'prod_frontend_url': prod_frontend_url},
         )
         html_content = render_to_string(
             "emails/activation_email.html",
-            context={'user': instance, 'activation_url': full_url, 'domain_url': domain_url},
+            context={'user': instance, 'activation_url': full_url, 'domain_url': domain_url, 'prod_frontend_url': prod_frontend_url},
         )
         subject = 'Coderr Account aktivieren'
         msg = EmailMultiAlternatives(
