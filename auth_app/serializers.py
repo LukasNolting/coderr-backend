@@ -18,10 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
         Validate that passwords match and type is either 'Customer' or 'business'.
         """
         if data['password'] != data['repeated_password']:
-            raise serializers.ValidationError("Passwords do not match.")
-        
-        if data['type'] not in ['customer', 'business']:
-            raise serializers.ValidationError("Type must be 'Customer' or 'business'.")
+            raise serializers.ValidationError("Passwörter stimmen nicht überein.")
         
         return data
 

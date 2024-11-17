@@ -3,9 +3,7 @@ from .views import BaseInfoView
 from offers_app.views import OfferDetailView
 from orders_app.views import OrderCountView, CompletedOrderCountView
 from profile_app.views import ProfileView
-from auth_app.views import LoginView, RegisterView
-
-# SETTINGS.PY die APPS ergänzen
+from auth_app.views import LoginView, RegisterView, RequestPasswordReset, PasswordResetView, VerifyTokenView
 
 urlpatterns = [ 
     path('offers/', include('offers_app.urls')),   
@@ -18,5 +16,8 @@ urlpatterns = [
     path('profiles/', include('profile_app.urls')),
     path('reviews/', include('review_app.urls')),
     path('login/', LoginView.as_view()),
+    path('password-reset/', RequestPasswordReset.as_view(), name='password_reset'),
+    path('password-reset/<token>/', PasswordResetView.as_view(), name='password_reset_token'),
+    path('authentication/', VerifyTokenView.as_view(), name='verify_token'),
     path('registration/', RegisterView.as_view()),
 ]

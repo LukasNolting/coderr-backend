@@ -8,19 +8,18 @@
     <br />
     <div style="display: flex; justify-content: center; width: 100%;">
       <img
-        src="{{ domain_url }}/assets/img/logos/logo_big.png"
+        src="https://lukas-nolting.eu/assets/logo/logo_coderr.svg"
         alt=""
         style="max-width: 300px; height: auto;"
       />
     </div>
 
-    <p>Dear {{ user.username }},</p>
+    <p>Hallo {{ user.username }}!</p>
     <p>
-      Thank you for registering with
-      <a href="{{ domain_url }}" target="_blank" style="text-decoration: none;"
-        >Videoflix</a
-      >. To complete your registration and verify your email address, please
-      click the link below:
+      Vielen Dank, dass du dich bei
+      <a href="{{ domain_url }}" target="_blank" style="text-decoration: none;">Coderr</a>
+      registriert hast. <br>
+      Klicke bitte auf den folgenden Link, um deinen Account zu aktivieren:
     </p>
     <br />
     <a href="{{ activation_url }}" target="_blank" style="
@@ -28,23 +27,23 @@
       font-weight: 700;
       font-size: 18px;
       color: white;
-      background-color: #2e3edf;
+      background-color: #01B676;
       border: 2px solid white;
       padding: 16px 32px;
       border-radius: 40px;
       cursor: pointer;
       text-decoration: none;
       text-align: center;
-    ">Activate account</a>
+    ">Account aktivieren</a>
     <br />
     <br>
 
     <p>
-      If you did not create an account with us, please disregard this email.
+      Falls du dich nicht bei Coderr registriert hast, kannst du diese E-Mail ignorieren.
     </p>
 
-    <p>Best regards,</p>
+    <p>Viele Grüße,</p>
 
-    <p>Your Videoflix Team</p>
+    <p>Dein Coderr Team</p>
   </body>
 </html>
