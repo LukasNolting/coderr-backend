@@ -198,6 +198,32 @@ class OfferAPIView(APIView):
             {'message': f'Angebot mit ID {pk} wurde erfolgreich gelöscht.'},
             status=status.HTTP_204_NO_CONTENT
         )
+        
+    def patch(self, request, pk=None):
+        if not pk:
+            return Response(
+                {'error': 'Ein Angebots-ID muss angegeben werden.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Angebot abrufen
+            offer = Offer.objects.get(pk=pk)
+        except Offer.DoesNotExist:
+            return Response(
+                {'error': 'Angebot nicht gefunden.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Angebot aktualisieren
+        offer.title = request.data.get('title', offer.title)
+        offer.description = request.data.get('description', offer.description)
+        offer.save()
+
+        return Response(
+            {'message': f'Angebot mit ID {pk} wurde erfolgreich aktualisiert.'},
+            status=status.HTTP_200_OK
+        )
 
 
 

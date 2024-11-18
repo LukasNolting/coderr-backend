@@ -2,21 +2,22 @@ from rest_framework import serializers
 from auth_app.models import CustomUser
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    
+    user = serializers.IntegerField(source='id')
     class Meta:
         model = CustomUser
         fields = [
             'id', 'username', 'first_name', 'last_name', 'file', 
             'location', 'tel', 'description', 'working_hours', 
-            'type', 'email', 'created_at'
+            'type', 'email', 'created_at', 'user'
         ]
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    user = serializers.IntegerField(source='id')
     class Meta:
         model = CustomUser
         fields = [
             'location', 'tel', 'description', 
-            'working_hours', 'type', 'email'
+            'working_hours', 'type', 'email', 'user', 'file', 'first_name', 'last_name'
         ]
 
 class BusinessUserSerializer(serializers.ModelSerializer):
