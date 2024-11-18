@@ -215,15 +215,21 @@ class OfferAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Angebot aktualisieren
+        # Aktualisiere das Angebot
         offer.title = request.data.get('title', offer.title)
         offer.description = request.data.get('description', offer.description)
+
+        # Überprüfe, ob ein neues Bild hochgeladen wurde
+        if 'image' in request.data:
+            offer.image = request.data.get('image')
+
         offer.save()
 
         return Response(
             {'message': f'Angebot mit ID {pk} wurde erfolgreich aktualisiert.'},
             status=status.HTTP_200_OK
         )
+
 
 
 

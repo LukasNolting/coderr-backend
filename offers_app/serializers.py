@@ -12,7 +12,7 @@ class OfferDetailSerializer(serializers.ModelSerializer):
             'delivery_time_in_days',
             'price',
             'features',
-            'offer_type'
+            'offer_type',
         ]
 
 
