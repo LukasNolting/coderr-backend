@@ -20,7 +20,7 @@ class OfferSerializer(serializers.ModelSerializer):
     details = OfferDetailSerializer(many=True)
     min_price = serializers.SerializerMethodField()
     min_delivery_time = serializers.SerializerMethodField()
-    user = serializers.IntegerField(source='id')
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = Offer
         fields = [
@@ -31,8 +31,8 @@ class OfferSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'details',
-            'min_price',  # Dynamisches Feld
-            'min_delivery_time',  # Dynamisches Feld
+            'min_price',
+            'min_delivery_time',
             'user'
         ]
         read_only_fields = ['user']

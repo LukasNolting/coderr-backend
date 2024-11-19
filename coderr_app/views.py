@@ -3,7 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from review_app.models import Review
 from offers_app.models import Offer, OfferDetail
+<<<<<<< HEAD
 from orders_app.models import Order
+=======
+>>>>>>> b30026af5873de6abdccdcaf72d4ce2055481663
 from auth_app.models import CustomUser
 from django.db.models import Avg
 import random
@@ -83,6 +86,7 @@ class InitDBService(APIView):
             "Tech Solutions Ltd.", "Code Masters", "Web Innovators", "Dev Experts",
             "Digital Builders", "NextGen IT", "FutureWorks", "Soft Solutions", "App Crafters", "Cloud Tech"
         ]
+
         # Create 10 business users with dynamic data
         for i, name in enumerate(business_names):
             first_name, last_name = random.choice(customer_names).split(" ")
@@ -137,6 +141,7 @@ class InitDBService(APIView):
                     image=random.choice(offer_images)
                 )
 
+<<<<<<< HEAD
                 # Create three OfferDetails for each offer
                 for offer_type, title_suffix in OfferDetail.OFFER_TYPES:
                     OfferDetail.objects.create(
@@ -182,6 +187,38 @@ class InitDBService(APIView):
                 "Working with {business_user.username} was a pleasure for {customer.first_name}, who appreciated their dedication and skill."
             ]
         
+=======
+                # Add offer details for each offer
+                offer_details_data = [
+                    {
+                        "title": f"Basic Plan for {offer.title}",
+                        "revisions": 2,
+                        "delivery_time_in_days": 5,
+                        "price": random.randint(100, 200),
+                        "features": ["Feature A", "Feature B"],
+                        "offer_type": "basic",
+                    },
+                    {
+                        "title": f"Standard Plan for {offer.title}",
+                        "revisions": 5,
+                        "delivery_time_in_days": 10,
+                        "price": random.randint(200, 400),
+                        "features": ["Feature A", "Feature B", "Feature C"],
+                        "offer_type": "standard",
+                    },
+                    {
+                        "title": f"Premium Plan for {offer.title}",
+                        "revisions": -1,
+                        "delivery_time_in_days": 15,
+                        "price": random.randint(500, 800),
+                        "features": ["Feature A", "Feature B", "Feature C", "Feature D"],
+                        "offer_type": "premium",
+                    },
+                ]
+
+                for detail_data in offer_details_data:
+                    OfferDetail.objects.create(offer=offer, **detail_data)
+>>>>>>> b30026af5873de6abdccdcaf72d4ce2055481663
 
         # Create reviews by customers for the existing business users and offers with dynamic data
         for business_user in business_users:
@@ -196,5 +233,9 @@ class InitDBService(APIView):
                     )
                 )
 
+<<<<<<< HEAD
         return Response({'message': 'Demo data initialized successfully.'}, status=status.HTTP_200_OK)
 
+=======
+        return Response({'message': 'Demo data initialized successfully.'}, status=status.HTTP_200_OK)
+>>>>>>> b30026af5873de6abdccdcaf72d4ce2055481663
