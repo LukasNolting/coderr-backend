@@ -6,7 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
 from rest_framework.generics import ListAPIView
 from rest_framework import filters
 
@@ -19,36 +18,49 @@ class ReviewView(ListAPIView, APIView):
     ordering_fields = ['updated_at']
 
     def get(self, request, pk=None):
+        user = request.user
+
         if pk:
             try:
                 review = Review.objects.get(pk=pk)
-                response_data = {
-                    'id': review.id,
-                    'business_user': review.business_user.id,
-                    'reviewer': review.reviewer.id,
-                    'rating': review.rating,
-                    'description': review.description,
-                    'created_at': review.created_at,
-                    'updated_at': review.updated_at
-                }
-                return Response(response_data, status=status.HTTP_200_OK)
+                if review.business_user == user or review.reviewer == user:
+                    response_data = {
+                        'id': review.id,
+                        'business_user': review.business_user.id,
+                        'reviewer': review.reviewer.id,
+                        'rating': review.rating,
+                        'description': review.description,
+                        'created_at': review.created_at,
+                        'updated_at': review.updated_at
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error': 'Not authorized to view this review'}, status=status.HTTP_403_FORBIDDEN)
             except Review.DoesNotExist:
                 return Response({'error': 'Review not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.type == 'business':  
+            reviews = Review.objects.filter(business_user=user)
+        elif user.type == 'customer': 
+            reviews = Review.objects.filter(reviewer=user)
         else:
-            reviews = self.filter_queryset(self.get_queryset())
-            response_data = [
-                {
-                    'id': review.id,
-                    'business_user': review.business_user.id,
-                    'reviewer': review.reviewer.id,
-                    'rating': review.rating,
-                    'description': review.description,
-                    'created_at': review.created_at,
-                    'updated_at': review.updated_at
-                }
-                for review in reviews
-            ]
-            return Response(response_data, status=status.HTTP_200_OK)
+            return Response({'error': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
+        reviews = self.filter_queryset(reviews)
+
+        response_data = [
+            {
+                'id': review.id,
+                'business_user': review.business_user.id,
+                'reviewer': review.reviewer.id,
+                'rating': review.rating,
+                'description': review.description,
+                'created_at': review.created_at,
+                'updated_at': review.updated_at
+            }
+            for review in reviews
+        ]
+        return Response(response_data, status=status.HTTP_200_OK)
+
 
     def post(self, request):
         business_user_id = request.data.get('business_user')
