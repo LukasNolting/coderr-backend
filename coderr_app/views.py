@@ -151,10 +151,9 @@ class InitDBService(APIView):
                         revisions=random.choice([1, 3, 5]),
                         delivery_time_in_days=random.randint(1, 10),
                         price=round(random.uniform(50, 500), 2),
-                        features={
-                            "feature_1": f"Key feature for {title_suffix}",
-                            "feature_2": f"Another feature for {title_suffix}"
-                        },
+                        features=[f"Key feature for {title_suffix}",
+                            f"Another feature for {title_suffix}"
+                        ],
                         offer_type=offer_type
                     )
 
