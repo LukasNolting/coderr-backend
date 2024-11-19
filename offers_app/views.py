@@ -78,6 +78,7 @@ class OfferAPIView(APIView):
             serializer = OfferSerializer(result_page, many=True)
             return paginator.get_paginated_response(serializer.data)
 
+
     def post(self, request):
         if request.user.type != 'business':
             return Response(
@@ -215,22 +216,62 @@ class OfferAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Aktualisiere das Angebot
+        # Überprüfen, ob der Benutzer berechtigt ist, das Angebot zu bearbeiten
+        if offer.user != request.user:
+            return Response(
+                {'error': 'Nicht autorisiert, dieses Angebot zu bearbeiten.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Hauptdaten des Angebots aktualisieren
         offer.title = request.data.get('title', offer.title)
         offer.description = request.data.get('description', offer.description)
 
-        # Überprüfe, ob ein neues Bild hochgeladen wurde
+        # Überprüfen, ob ein neues Bild hochgeladen wurde
         if 'image' in request.data:
             offer.image = request.data.get('image')
 
         offer.save()
 
+        # Details aktualisieren
+        details = request.data.get('details', [])
+        if details:
+            for detail_data in details:
+                detail_id = detail_data.get('id')
+
+                try:
+                    # Detail abrufen oder neu erstellen
+                    if detail_id:
+                        detail = OfferDetail.objects.get(pk=detail_id, offer=offer)
+                    else:
+                        detail = OfferDetail(offer=offer)
+
+                    # Detailwerte aktualisieren
+                    detail.title = detail_data.get('title', detail.title)
+                    detail.revisions = int(detail_data.get('revisions', detail.revisions))
+                    detail.delivery_time_in_days = int(detail_data.get('delivery_time_in_days', detail.delivery_time_in_days))
+                    detail.price = detail_data.get('price', detail.price)
+                    detail.features = detail_data.get('features', detail.features)
+                    detail.offer_type = detail_data.get('offer_type', detail.offer_type)
+
+                    detail.save()
+
+                except OfferDetail.DoesNotExist:
+                    return Response(
+                        {'error': f'Angebotsdetail mit ID {detail_id} nicht gefunden.'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                except ValueError as e:
+                    return Response(
+                        {'error': f'Fehler beim Aktualisieren der Details: {str(e)}'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+        # Erfolgsmeldung zurückgeben
         return Response(
             {'message': f'Angebot mit ID {pk} wurde erfolgreich aktualisiert.'},
             status=status.HTTP_200_OK
         )
-
-
 
 
 class OfferDetailView(APIView):
