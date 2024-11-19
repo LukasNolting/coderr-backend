@@ -1,11 +1,9 @@
 from django.db import models
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from auth_app.models import CustomUser
 
 class Review(models.Model):
-    business_user = models.ForeignKey(User, related_name='business_reviews', on_delete=models.CASCADE)
-    reviewer = models.ForeignKey(User, related_name='user_reviews', on_delete=models.CASCADE)
+    business_user = models.ForeignKey(CustomUser, related_name='business_reviews', on_delete=models.CASCADE)
+    reviewer = models.ForeignKey(CustomUser, related_name='user_reviews', on_delete=models.CASCADE)
     rating = models.PositiveIntegerField()
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
