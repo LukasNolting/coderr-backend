@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from review_app.models import Review
-from offers_app.models import Offer
+from offers_app.models import Offer, OfferDetail
 from auth_app.models import CustomUser
 from django.db.models import Avg
 import random
@@ -68,6 +68,7 @@ class InitDBService(APIView):
             "Tech Solutions Ltd.", "Code Masters", "Web Innovators", "Dev Experts",
             "Digital Builders", "NextGen IT", "FutureWorks", "Soft Solutions", "App Crafters", "Cloud Tech"
         ]
+
         # Create 10 business users with dynamic data
         for i, name in enumerate(business_names):
             first_name, last_name = random.choice(customer_names).split(" ")
@@ -88,11 +89,42 @@ class InitDBService(APIView):
 
             # Create offers for each business user with dynamic data
             for j in range(2):
-                Offer.objects.create(
+                offer = Offer.objects.create(
                     user=user,
                     title=f'Software Development Service {j + 1} by {name}',
                     description=f'{name} offers comprehensive software development services tailored to your needs. High quality, efficient solutions delivered in record time.',
                 )
+
+                # Add offer details for each offer
+                offer_details_data = [
+                    {
+                        "title": f"Basic Plan for {offer.title}",
+                        "revisions": 2,
+                        "delivery_time_in_days": 5,
+                        "price": random.randint(100, 200),
+                        "features": ["Feature A", "Feature B"],
+                        "offer_type": "basic",
+                    },
+                    {
+                        "title": f"Standard Plan for {offer.title}",
+                        "revisions": 5,
+                        "delivery_time_in_days": 10,
+                        "price": random.randint(200, 400),
+                        "features": ["Feature A", "Feature B", "Feature C"],
+                        "offer_type": "standard",
+                    },
+                    {
+                        "title": f"Premium Plan for {offer.title}",
+                        "revisions": -1,
+                        "delivery_time_in_days": 15,
+                        "price": random.randint(500, 800),
+                        "features": ["Feature A", "Feature B", "Feature C", "Feature D"],
+                        "offer_type": "premium",
+                    },
+                ]
+
+                for detail_data in offer_details_data:
+                    OfferDetail.objects.create(offer=offer, **detail_data)
 
         # Create reviews by customers for the existing business users and offers with dynamic data
         customers = CustomUser.objects.filter(type='customer')
