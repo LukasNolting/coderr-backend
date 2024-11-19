@@ -8,13 +8,16 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+
+
 
 class ReviewView(ListAPIView, APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
     queryset = Review.objects.all()
-    filter_backends = [filters.OrderingFilter]
-    filterset_fields = ['business_user']
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['business_user', 'business_user_id']
     ordering_fields = ['updated_at']
 
     def get(self, request, pk=None):
@@ -33,6 +36,7 @@ class ReviewView(ListAPIView, APIView):
                         'created_at': review.created_at,
                         'updated_at': review.updated_at
                     }
+                    print(review.business_user.id)
                     return Response(response_data, status=status.HTTP_200_OK)
                 else:
                     return Response({'error': 'Not authorized to view this review'}, status=status.HTTP_403_FORBIDDEN)
