@@ -83,6 +83,10 @@ class InitDBService(APIView):
             "Tech Solutions Ltd.", "Code Masters", "Web Innovators", "Dev Experts",
             "Digital Builders", "NextGen IT", "FutureWorks", "Soft Solutions", "App Crafters", "Cloud Tech"
         ]
+        
+        avatar_images = [
+            f'/avatar/user_{i}.jpg' for i in range(1, 11)  # Generiert Pfade von user_1.jpg bis user_10.jpg
+        ]
 
         # Create 10 business users with dynamic data
         for i, name in enumerate(business_names):
@@ -98,7 +102,8 @@ class InitDBService(APIView):
                 location=random.choice(['Berlin', 'Munich', 'Hamburg', 'Frankfurt', 'Cologne', 'Stuttgart', 'Dusseldorf', 'Dresden', 'Leipzig', 'Bremen']),
                 tel=f'0151-{random.randint(1000000, 9999999)}',
                 description=f'{name} is known for providing exceptional IT services and creative solutions.',
-                working_hours=f'{random.randint(8, 10)}:00 - {random.randint(16, 18)}:00'
+                working_hours=f'{random.randint(8, 10)}:00 - {random.randint(16, 18)}:00',
+                file=random.choice(avatar_images)
             )
             business_users.append(user)
             
