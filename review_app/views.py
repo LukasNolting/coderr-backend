@@ -15,7 +15,7 @@ class ReviewView(ListAPIView):
     queryset = Review.objects.all()
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['business_user_id']
-    ordering_fields = ['updated_at']
+    ordering_fields = ['updated_at', 'rating']
     def get(self, request, *args, **kwargs):
         current_user = request.user
         business_user_id = request.query_params.get('business_user_id', None)
