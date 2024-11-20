@@ -8,7 +8,36 @@ from auth_app.models import CustomUser
 from django.db.models import Avg
 import random
 from datetime import datetime, timedelta
+from django.shortcuts import get_object_or_404
 
+
+
+class OrderCountAPIView(APIView):
+    """
+    Returns the count of orders for a specific business user, filtered by status.
+    """
+
+    def get(self, request, business_user_id):
+        User = CustomUser
+        business_user = get_object_or_404(User, pk=business_user_id)
+
+        status_filter = request.query_params.get('status', 'completed')
+
+        valid_statuses = dict(Order.STATUS_CHOICES).keys()
+        if status_filter not in valid_statuses:
+            return Response(
+                {"error": f"Ungültiger Status. Gültige Werte sind: {', '.join(valid_statuses)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        order_count = Order.objects.filter(
+            business_user=business_user,
+            status=status_filter
+        ).count()
+
+        return Response({"order_count": order_count, "status": status_filter}, status=status.HTTP_200_OK)
+
+    
 class BaseInfoView(APIView):
     """
     API endpoint that provides basic platform statistics, including the number of reviews,

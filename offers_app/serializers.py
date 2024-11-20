@@ -9,6 +9,7 @@ class OfferDetailSerializer(serializers.ModelSerializer):
         model = OfferDetail
         fields = [
             'id',
+            'offer',
             'title',
             'revisions',
             'delivery_time_in_days',
