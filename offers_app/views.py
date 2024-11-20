@@ -10,12 +10,13 @@ from rest_framework import status
 from django.db.models import Q
 from .models import Offer, OfferDetail
 from .serializers import OfferSerializer, OfferDetailSerializer
-
+from django.db.models import Min
 
 class OfferPagination(PageNumberPagination):
-    page_size = 10
+    page_size = 6
     page_size_query_param = 'page_size'
     max_page_size = 100
+
 
 
 class OfferAPIView(APIView):
@@ -26,13 +27,19 @@ class OfferAPIView(APIView):
     def get(self, request, pk=None):
         if pk:
             try:
-                offer = Offer.objects.get(pk=pk)
+                offer = Offer.objects.annotate(
+                    min_price=Min('details__price'),
+                    min_delivery_time=Min('details__delivery_time_in_days')
+                ).get(pk=pk)
                 serializer = OfferSerializer(offer)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except Offer.DoesNotExist:
                 return Response({'error': 'Angebot nicht gefunden'}, status=status.HTTP_404_NOT_FOUND)
         else:
-            offers = Offer.objects.all()
+            offers = Offer.objects.annotate(
+                min_price=Min('details__price'),
+                min_delivery_time=Min('details__delivery_time_in_days')
+            )
 
             # Filter: creator_id
             creator_id = request.query_params.get('creator_id')
@@ -44,16 +51,25 @@ class OfferAPIView(APIView):
             if min_price:
                 try:
                     min_price = float(min_price)
-                    offers = offers.filter(details__price__gte=min_price)
+                    offers = offers.filter(min_price__gte=min_price)
                 except ValueError:
                     return Response({'error': 'min_price muss eine gültige Zahl sein.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Filter: max_price
+            max_price = request.query_params.get('max_price')
+            if max_price:
+                try:
+                    max_price = float(max_price)
+                    offers = offers.filter(details__price__lte=max_price)
+                except ValueError:
+                    return Response({'error': 'max_price muss eine gültige Zahl sein.'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Filter: max_delivery_time
             max_delivery_time = request.query_params.get('max_delivery_time')
             if max_delivery_time:
                 try:
                     max_delivery_time = int(max_delivery_time)
-                    offers = offers.filter(details__delivery_time_in_days__lte=max_delivery_time)
+                    offers = offers.filter(min_delivery_time__lte=max_delivery_time)
                 except ValueError:
                     return Response({'error': 'max_delivery_time muss eine ganze Zahl sein.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -65,20 +81,41 @@ class OfferAPIView(APIView):
                 )
 
             # Sortierung: ordering
-            ordering = request.query_params.get('ordering', 'updated_at')
-            if ordering in ['updated_at', 'min_price']:
-                offers = offers.order_by(ordering)
+            ordering = request.query_params.get('ordering')
+            if ordering:
+                ordering_fields = ordering.split(',')
+                valid_fields = {
+                    'min_price': 'min_price',
+                    '-min_price': '-min_price',
+                    'max_price': '-details__price',
+                    'min_delivery_time': 'min_delivery_time',
+                    '-min_delivery_time': '-min_delivery_time',
+                    'updated_at': 'updated_at',
+                    '-updated_at': '-updated_at',
+                }
+
+                # Mapping der validen Felder auf die Query
+                resolved_ordering = [
+                    valid_fields[field] for field in ordering_fields if field in valid_fields
+                ]
+
+                if resolved_ordering:
+                    offers = offers.order_by(*resolved_ordering)
+                else:
+                    return Response(
+                        {'error': f'Ungültige Sortierfelder: {ordering_fields}'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
             else:
-                # Standard-Sortierung, falls kein gültiger ordering-Wert vorhanden ist
-                offers = offers.order_by('updated_at')
+                # Standard-Sortierung: Kürzeste Lieferzeit zuerst
+                offers = offers.order_by('min_delivery_time')
 
             # Pagination
             paginator = OfferPagination()
             result_page = paginator.paginate_queryset(offers, request)
             serializer = OfferSerializer(result_page, many=True)
             return paginator.get_paginated_response(serializer.data)
-
-
+            
     def post(self, request):
         if request.user.type != 'business':
             return Response(
