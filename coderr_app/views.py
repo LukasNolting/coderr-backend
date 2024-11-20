@@ -73,6 +73,11 @@ class BaseInfoView(APIView):
 class InitDBService(APIView):
     """
     API endpoint to initialize the database with demo data.
+
+    This endpoint is used to populate the database with sample data for demonstration purposes.
+    It creates a set of customer and business users, each with a set of associated offers, orders, and reviews.
+    The data is randomly generated and includes a variety of offer types, prices, and descriptions.
+    The endpoint returns a JSON response with a success message and a HTTP status code of 200.
     """
     @staticmethod
     def random_past_date(days_back=365):
@@ -84,29 +89,29 @@ class InitDBService(APIView):
         return random_date
     
     def get(self, request, *args, **kwargs):
-        # Clear existing demo data
+
         CustomUser.objects.filter(username__startswith='demo_').delete()
         Offer.objects.filter(user__username__startswith='demo_').delete()
         Review.objects.filter(reviewer__username__startswith='demo_').delete()
         Order.objects.filter(customer_user__username__startswith='demo_').delete()
 
-        # Create 10 customers with dynamic data
         customer_names = [
-            "Alice Becker", "John Smith", "Emily Davis", "Michael Johnson", "Sarah Lee",
-            "Daniel Brown", "Laura Wilson", "Paul Green", "Sophia White", "James Harris"
+            "Max Mustermann", "Erika Musterfrau", "Hans Meier", "Anna Schmidt",
+            "Peter Müller", "Julia Schneider", "Thomas Weber", "Claudia Fischer",
+            "Markus Bauer", "Sabrina Hoffmann"
         ]
         order_descriptions = [
-            "A comprehensive service tailored to the client's needs.",
-            "Efficient and high-quality software solutions delivered on time.",
-            "Custom development with exceptional attention to detail.",
-            "Innovative solutions that exceed expectations.",
-            "Personalized services designed to meet business goals.",
-            "High-performance systems built with cutting-edge technology.",
-            "Reliable and scalable solutions for growing businesses.",
-            "Cost-effective services without compromising on quality.",
-            "End-to-end support for seamless project execution.",
-            "Creative and unique solutions for complex problems.",
-            "Top-notch services with a focus on customer satisfaction."
+            "Ein umfassender Service, der auf die Bedürfnisse des Kunden zugeschnitten ist.",
+            "Effiziente und hochwertige Softwarelösungen, pünktlich geliefert.",
+            "Individuelle Entwicklung mit außergewöhnlicher Liebe zum Detail.",
+            "Innovative Lösungen, die die Erwartungen übertreffen.",
+            "Personalisierte Dienstleistungen, die auf die Erreichung von Geschäftszielen ausgerichtet sind.",
+            "Hochleistungsfähige Systeme, entwickelt mit modernster Technologie.",
+            "Zuverlässige und skalierbare Lösungen für wachsende Unternehmen.",
+            "Kosteneffiziente Dienstleistungen, ohne Kompromisse bei der Qualität.",
+            "Umfassende Unterstützung für eine nahtlose Projektausführung.",
+            "Kreative und einzigartige Lösungen für komplexe Probleme.",
+            "Spitzenleistungen mit einem Fokus auf Kundenzufriedenheit."
         ]
         for i, name in enumerate(customer_names):
             first_name, last_name = name.split(" ")
@@ -130,10 +135,23 @@ class InitDBService(APIView):
         ]
         
         avatar_images = [
-            f'/avatar/user_{i}.jpg' for i in range(1, 11)  # Generiert Pfade von user_1.jpg bis user_10.jpg
+            f'/avatar/user_{i}.jpg' for i in range(1, 11)
+        ]
+        
+        business_descriptions = [
+            "Ein führendes Unternehmen in der IT-Branche, das innovative Lösungen für komplexe Herausforderungen bietet.",
+            "Bekannt für zuverlässige und skalierbare Softwarelösungen, die den Anforderungen moderner Unternehmen gerecht werden.",
+            "Wir bieten maßgeschneiderte digitale Lösungen, um Ihr Geschäft auf die nächste Stufe zu bringen.",
+            "Experten für kreative und effiziente IT-Dienstleistungen mit einem Fokus auf Qualität und Kundenzufriedenheit.",
+            "Unsere Mission ist es, durch Spitzentechnologie und Expertise außergewöhnliche Ergebnisse zu liefern.",
+            "Ihr vertrauenswürdiger Partner für umfassende IT-Dienstleistungen, die langfristige Erfolge sichern.",
+            "Innovative Technologien kombiniert mit praktischen Lösungen für nachhaltige Geschäftsentwicklung.",
+            "Spezialisiert auf moderne und zukunftsorientierte IT-Strategien, die Ihrem Unternehmen einen Vorsprung verschaffen.",
+            "Wir entwickeln digitale Produkte, die durch Kreativität und technisches Know-how überzeugen.",
+            "Ihr Experte für flexible und agile IT-Lösungen, die sich den sich ändernden Anforderungen Ihres Unternehmens anpassen."
         ]
 
-        # Create 10 business users with dynamic data
+
         for i, name in enumerate(business_names):
             first_name, last_name = random.choice(customer_names).split(" ")
             user = CustomUser.objects.create_user(
@@ -146,40 +164,41 @@ class InitDBService(APIView):
                 last_name=last_name,
                 location=random.choice(['Berlin', 'Munich', 'Hamburg', 'Frankfurt', 'Cologne', 'Stuttgart', 'Dusseldorf', 'Dresden', 'Leipzig', 'Bremen']),
                 tel=f'0151-{random.randint(1000000, 9999999)}',
-                description=f'{name} is known for providing exceptional IT services and creative solutions.',
+                description=random.choice(business_descriptions),
                 working_hours=f'{random.randint(8, 10)}:00 - {random.randint(16, 18)}:00',
                 file=random.choice(avatar_images)
             )
             business_users.append(user)
             
             offer_titles = [
-                "Comprehensive Software Development",
-                "Tailored IT Solutions",
-                "Custom Web Applications",
-                "Enterprise Software Services",
-                "Mobile App Development",
-                "Full-Stack Development Expertise",
-                "Innovative Software Solutions",
-                "Agile Software Engineering",
-                "Bespoke Digital Solutions",
-                "Cutting-Edge Cloud Services"
+                "Umfassende Softwareentwicklung",
+                "Maßgeschneiderte IT-Lösungen",
+                "Individuelle Webanwendungen",
+                "Unternehmenssoftware-Dienstleistungen",
+                "Mobile App-Entwicklung",
+                "Full-Stack-Entwicklungsexpertise",
+                "Innovative Softwarelösungen",
+                "Agile Softwareentwicklung",
+                "Individuelle digitale Lösungen",
+                "Modernste Cloud-Dienste"
             ]
+
             offer_descriptions = [
-                "High-quality software development for businesses of all sizes.",
-                "Tailored solutions to meet your unique business challenges.",
-                "Reliable and scalable web application development services.",
-                "Streamlined processes to deliver exceptional results on time.",
-                "Expertise in mobile app development for Android and iOS.",
-                "Advanced full-stack solutions for complex requirements.",
-                "Innovative strategies to enhance digital transformation.",
-                "Agile development methods for dynamic project needs.",
-                "Custom solutions designed for maximum efficiency.",
-                "Secure and optimized cloud services to boost performance."
+                "Hochwertige Softwareentwicklung für Unternehmen jeder Größe.",
+                "Maßgeschneiderte Lösungen, um Ihre einzigartigen geschäftlichen Herausforderungen zu meistern.",
+                "Zuverlässige und skalierbare Dienstleistungen zur Entwicklung von Webanwendungen.",
+                "Optimierte Prozesse für außergewöhnliche Ergebnisse, pünktlich geliefert.",
+                "Expertise in der Entwicklung von mobilen Apps für Android und iOS.",
+                "Fortschrittliche Full-Stack-Lösungen für komplexe Anforderungen.",
+                "Innovative Strategien zur Förderung der digitalen Transformation.",
+                "Agile Entwicklungsmethoden für dynamische Projektanforderungen.",
+                "Individuelle Lösungen, die maximale Effizienz bieten.",
+                "Sichere und optimierte Cloud-Dienste zur Steigerung der Leistung."
             ]
+
             offer_images = [
                 f'/offers/offer_{i}.jpg' for i in range(1, 11) 
             ]
-            # Create offers for each business user with dynamic data
             for j in range(2):
                 offer = Offer.objects.create(
                     user=user,
@@ -191,7 +210,6 @@ class InitDBService(APIView):
                 offer.created_at = random_date
                 offer.updated_at = random_date
                 offer.save()
-                # Create three OfferDetails for each offer
                 for offer_type, title_suffix in OfferDetail.OFFER_TYPES:
                     OfferDetail.objects.create(
                         offer=offer,
@@ -199,15 +217,14 @@ class InitDBService(APIView):
                         revisions=random.choice([1, 3, 5]),
                         delivery_time_in_days=random.randint(1, 10),
                         price=round(random.uniform(50, 500), 2),
-                        features=[f"Key feature for {title_suffix}",
-                            f"Another feature for {title_suffix}"
+                        features=[f"Ausstattungsmerkmal 1 {title_suffix}",
+                            f"Ausstattungsmerkmal extra {title_suffix}"
                         ],
                         offer_type=offer_type
                     )
 
-                # Create orders for the current offer
                 customers = CustomUser.objects.filter(type='customer')
-                for k in range(2):  # Create 2 orders for each offer
+                for k in range(2): 
                     customer = random.choice(customers)
                     offer_detail = random.choice(offer.details.all())
                     order = Order.objects.create(
@@ -226,21 +243,20 @@ class InitDBService(APIView):
                 order.updated_at = random_date
                 order.save()
                     
-        review_descriptions = [
-                "{customer.first_name} was extremely satisfied with the service provided by {business_user.username}. Highly recommended for software projects!",
-                "{customer.first_name} appreciated the excellent communication and timely delivery from {business_user.username}. Great experience!",
-                "The collaboration between {customer.first_name} and {business_user.username} was seamless and productive. Top-notch service!",
-                "{business_user.username} provided exceptional support to {customer.first_name}, ensuring all project requirements were met.",
-                "{customer.first_name} found the solutions offered by {business_user.username} innovative and effective. A highly professional team!",
-                "Thanks to {business_user.username}, {customer.first_name}'s project was completed on time with outstanding results.",
-                "{business_user.username}'s expertise and attention to detail impressed {customer.first_name}. Would definitely recommend!",
-                "{customer.first_name} praised {business_user.username} for their flexibility and ability to adapt to changing needs.",
-                "The service from {business_user.username} exceeded {customer.first_name}'s expectations in every aspect. Excellent work!",
-                "Working with {business_user.username} was a pleasure for {customer.first_name}, who appreciated their dedication and skill."
-            ]
-        
+                review_descriptions = [
+                    "{customer.first_name} war äußerst zufrieden mit dem Service, den {business_user.first_name} bereitgestellt hat. Sehr empfehlenswert für Softwareprojekte!",
+                    "{customer.first_name} schätzte die ausgezeichnete Kommunikation und pünktliche Lieferung von {business_user.first_name}. Tolle Erfahrung!",
+                    "Die Zusammenarbeit zwischen {customer.first_name} und {business_user.first_name} war nahtlos und produktiv. Erstklassiger Service!",
+                    "{business_user.first_name} bot {customer.first_name} außergewöhnliche Unterstützung und stellte sicher, dass alle Projektanforderungen erfüllt wurden.",
+                    "{customer.first_name} fand die von {business_user.first_name} angebotenen Lösungen innovativ und effektiv. Ein hochprofessionelles Team!",
+                    "Dank {business_user.first_name} wurde {customer.first_name}'s Projekt pünktlich mit herausragenden Ergebnissen abgeschlossen.",
+                    "Die Expertise und Liebe zum Detail von {business_user.first_name} beeindruckten {customer.first_name}. Würde definitiv empfehlen!",
+                    "{customer.first_name} lobte {business_user.first_name} für ihre Flexibilität und Fähigkeit, sich an wechselnde Bedürfnisse anzupassen.",
+                    "Der Service von {business_user.first_name} übertraf {customer.first_name}'s Erwartungen in jeder Hinsicht. Hervorragende Arbeit!",
+                    "Die Zusammenarbeit mit {business_user.first_name} war eine Freude für {customer.first_name}, der ihre Hingabe und Kompetenz schätzte."
+                ]
 
-        # Create reviews by customers for the existing business users and offers with dynamic data
+
         for business_user in business_users:
             for customer in customers:
                 review =Review.objects.create(
