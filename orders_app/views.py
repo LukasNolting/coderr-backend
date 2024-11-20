@@ -1,3 +1,4 @@
+from urllib import request
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -6,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from django.db.models import Q
 from .serializers import OrderSerializer
-from offers_app.models import Offer
+from offers_app.models import Offer, OfferDetail
 from .models import Order
 
 
@@ -32,13 +33,18 @@ class OrderAPIView(APIView):
 
     def post(self, request):
         data = request.data
-
         if request.user.type != 'customer':
             return Response({'error': 'Nur Kunden dürfen Bestellungen erstellen.'}, status=status.HTTP_403_FORBIDDEN)
 
         offer_id = data.get("offer_id")
-        if not offer_id:
-            return Response({'error': 'Ein Angebot muss angegeben werden.'}, status=status.HTTP_400_BAD_REQUEST)
+        offer_detail_id = data.get("offer_detail_id")
+
+        if not offer_id and not offer_detail_id:
+            return Response({'error': 'Ein Angebot oder OfferDetail muss angegeben werden.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if offer_detail_id:
+            offer_detail = get_object_or_404(OfferDetail, pk=offer_detail_id)
+            offer_id = offer_detail.offer.id  # Zuordnung zur Offer-Instanz
 
         offer = get_object_or_404(Offer, pk=offer_id)
 
@@ -56,7 +62,6 @@ class OrderAPIView(APIView):
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
     def patch(self, request, pk):
         order = get_object_or_404(Order, pk=pk)
 
