@@ -1,17 +1,12 @@
-
 from .models import Review
 from auth_app.models import CustomUser
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
-
-
-
 from django_filters.rest_framework import DjangoFilterBackend
 
 class ReviewView(ListAPIView):
@@ -19,32 +14,25 @@ class ReviewView(ListAPIView):
     authentication_classes = [TokenAuthentication]
     queryset = Review.objects.all()
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['business_user_id']  # Ermöglicht Filterung nach 'business_user'
-    ordering_fields = ['updated_at']  # Ermöglicht Sortierung nach 'updated_at'
-
+    filterset_fields = ['business_user_id']
+    ordering_fields = ['updated_at']
     def get(self, request, *args, **kwargs):
-        # Überprüfen, ob ein Filter für 'business_user' gesetzt wurde
+        current_user = request.user
         business_user_id = request.query_params.get('business_user_id', None)
 
-        if not business_user_id:
-            return Response(
-                {'error': 'Parameter "business_user" ist erforderlich.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        if business_user_id:
+            try:
+                reviews = Review.objects.filter(business_user_id=business_user_id)
+            except ValueError:
+                return Response(
+                    {'error': 'Ungültiger Wert für "business_user_id".'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            reviews = Review.objects.filter(reviewer=current_user)
 
-        # Filtern nach dem angegebenen 'business_user'
-        try:
-            reviews = Review.objects.filter(business_user_id=business_user_id)
-        except ValueError:
-            return Response(
-                {'error': 'Ungültiger Wert für "business_user".'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Optional: Sortierung anwenden (falls ordering Parameter gesetzt ist)
         reviews = self.filter_queryset(reviews)
 
-        # Serialisieren und zurückgeben
         response_data = [
             {
                 'id': review.id,
@@ -58,7 +46,6 @@ class ReviewView(ListAPIView):
             for review in reviews
         ]
         return Response(response_data, status=status.HTTP_200_OK)
-
 
 
     def post(self, request):
