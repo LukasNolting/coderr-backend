@@ -45,6 +45,11 @@ class OrderAPIView(APIView):
         if offer_detail_id:
             offer_detail = get_object_or_404(OfferDetail, pk=offer_detail_id)
             offer_id = offer_detail.offer.id  # Zuordnung zur Offer-Instanz
+            revisions = offer_detail.revisions
+            delivery_time_in_days = offer_detail.delivery_time_in_days
+            price = offer_detail.price
+            features = offer_detail.features
+            offer_type = offer_detail.offer_type
 
         offer = get_object_or_404(Offer, pk=offer_id)
 
@@ -52,11 +57,11 @@ class OrderAPIView(APIView):
             customer_user=request.user,
             business_user=offer.user,
             title=data.get("title", offer.title),
-            revisions=data.get("revisions", 0),
-            delivery_time_in_days=data.get("delivery_time_in_days", 7),
-            price=data.get("price", offer.get_min_price()),
-            features=data.get("features", []),
-            offer_type=data.get("offer_type", "basic"),
+            revisions=data.get("revisions", revisions),
+            delivery_time_in_days=data.get("delivery_time_in_days", delivery_time_in_days),
+            price=data.get("price", price),
+            features=data.get("features", features),
+            offer_type=data.get("offer_type", offer_type),
             status="in_progress",
         )
 
