@@ -5,6 +5,7 @@ from rest_framework.authentication import TokenAuthentication
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from django.db.models import Q
+from .serializers import OrderSerializer
 from offers_app.models import Offer
 from .models import Order
 
@@ -19,25 +20,15 @@ class OrderAPIView(APIView):
             if order.customer_user != request.user and order.business_user != request.user:
                 return Response({'error': 'Keine Berechtigung für diese Bestellung.'}, status=status.HTTP_403_FORBIDDEN)
 
-            return Response({
-                "id": order.id,
-                "customer_user": order.customer_user.id,
-                "business_user": order.business_user.id,
-                "title": order.title,
-                "revisions": order.revisions,
-                "delivery_time_in_days": order.delivery_time_in_days,
-                "price": float(order.price),
-                "features": order.features,
-                "offer_type": order.offer_type,
-                "status": order.status,
-                "created_at": order.created_at.isoformat(),
-                "updated_at": order.updated_at.isoformat(),
-            }, status=status.HTTP_200_OK)
+            serializer = OrderSerializer(order)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
         else:
             orders = Order.objects.filter(
                 Q(customer_user=request.user) | Q(business_user=request.user)
-            ).values("id", "title", "status", "created_at", "updated_at")
-            return Response(list(orders), status=status.HTTP_200_OK)
+            )
+            serializer = OrderSerializer(orders, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         data = request.data
@@ -63,12 +54,8 @@ class OrderAPIView(APIView):
             status="in_progress",
         )
 
-        return Response({
-            "id": order.id,
-            "title": order.title,
-            "status": order.status,
-        }, status=status.HTTP_201_CREATED)
-
+        serializer = OrderSerializer(order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class OrderCountAPIView(APIView):
 
