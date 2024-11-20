@@ -57,6 +57,25 @@ class OrderAPIView(APIView):
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    def patch(self, request, pk):
+        order = get_object_or_404(Order, pk=pk)
+
+        if order.customer_user != request.user and order.business_user != request.user:
+            return Response({'error': 'Keine Berechtigung für diese Bestellung.'}, status=status.HTTP_403_FORBIDDEN)
+
+        new_status = request.data.get("status")
+        if not new_status or new_status not in dict(Order.STATUS_CHOICES).keys():
+            return Response(
+                {'error': 'Ungültiger oder fehlender Status. Gültige Werte sind: ' + ', '.join(dict(Order.STATUS_CHOICES).keys())},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        order.status = new_status
+        order.save()
+
+        serializer = OrderSerializer(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class OrderCountAPIView(APIView):
 
     authentication_classes = [TokenAuthentication]

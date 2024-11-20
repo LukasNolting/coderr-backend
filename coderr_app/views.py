@@ -7,7 +7,7 @@ from orders_app.models import Order
 from auth_app.models import CustomUser
 from django.db.models import Avg
 import random
-
+from datetime import datetime, timedelta
 
 class BaseInfoView(APIView):
     """
@@ -38,6 +38,15 @@ class InitDBService(APIView):
     """
     API endpoint to initialize the database with demo data.
     """
+    @staticmethod
+    def random_past_date(days_back=365):
+        """
+        Generates a random date in the past within the specified number of days.
+        """
+        random_days = random.randint(0, days_back)
+        random_date = datetime.now() - timedelta(days=random_days)
+        return random_date
+    
     def get(self, request, *args, **kwargs):
         # Clear existing demo data
         CustomUser.objects.filter(username__startswith='demo_').delete()
@@ -140,9 +149,12 @@ class InitDBService(APIView):
                     user=user,
                     title=random.choice(offer_titles),
                     description=random.choice(offer_descriptions),
-                    image=random.choice(offer_images)
+                    image=random.choice(offer_images),
                 )
-
+                random_date = self.random_past_date()
+                offer.created_at = random_date
+                offer.updated_at = random_date
+                offer.save()
                 # Create three OfferDetails for each offer
                 for offer_type, title_suffix in OfferDetail.OFFER_TYPES:
                     OfferDetail.objects.create(
@@ -162,7 +174,7 @@ class InitDBService(APIView):
                 for k in range(2):  # Create 2 orders for each offer
                     customer = random.choice(customers)
                     offer_detail = random.choice(offer.details.all())
-                    Order.objects.create(
+                    order = Order.objects.create(
                         customer_user=customer,
                         business_user=user,
                         title=f'Order for {offer_detail.title}',
@@ -173,7 +185,11 @@ class InitDBService(APIView):
                         offer_type=offer_detail.offer_type,
                         status=random.choice(['in_progress', 'completed', 'cancelled']),
                     )
-
+                random_date = self.random_past_date()
+                order.created_at = random_date
+                order.updated_at = random_date
+                order.save()
+                    
         review_descriptions = [
                 "{customer.first_name} was extremely satisfied with the service provided by {business_user.username}. Highly recommended for software projects!",
                 "{customer.first_name} appreciated the excellent communication and timely delivery from {business_user.username}. Great experience!",
@@ -191,7 +207,7 @@ class InitDBService(APIView):
         # Create reviews by customers for the existing business users and offers with dynamic data
         for business_user in business_users:
             for customer in customers:
-                Review.objects.create(
+                review =Review.objects.create(
                     business_user=business_user,
                     reviewer=customer,
                     rating=random.randint(3, 5),
@@ -200,6 +216,10 @@ class InitDBService(APIView):
                         business_user=business_user
                     )
                 )
+                random_date = self.random_past_date()
+                review.created_at = random_date
+                review.updated_at = random_date
+                review.save()
 
         return Response({'message': 'Demo data initialized successfully.'}, status=status.HTTP_200_OK)
 
