@@ -14,28 +14,35 @@ from django.shortcuts import get_object_or_404
 
 class OrderCountAPIView(APIView):
     """
-    Returns the count of orders for a specific business user, filtered by status.
+    Returns the count of orders for a specific business user.
+    Supports general filtering or counting only completed orders.
     """
 
     def get(self, request, business_user_id):
         User = CustomUser
         business_user = get_object_or_404(User, pk=business_user_id)
 
-        status_filter = request.query_params.get('status', 'completed')
+        if 'completed-order-count' in request.resolver_match.url_name:
+            order_count = Order.objects.filter(
+                business_user=business_user,
+                status='completed'
+            ).count()
+            return Response({"completed_order_count": order_count}, status=status.HTTP_200_OK)
+        else:
+            status_filter = request.query_params.get('status')
+            orders = Order.objects.filter(business_user=business_user)
 
-        valid_statuses = dict(Order.STATUS_CHOICES).keys()
-        if status_filter not in valid_statuses:
-            return Response(
-                {"error": f"Ungültiger Status. Gültige Werte sind: {', '.join(valid_statuses)}"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if status_filter:
+                valid_statuses = dict(Order.STATUS_CHOICES).keys()
+                if status_filter not in valid_statuses:
+                    return Response(
+                        {"error": f"Ungültiger Status. Gültige Werte sind: {', '.join(valid_statuses)}"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                orders = orders.filter(status=status_filter)
 
-        order_count = Order.objects.filter(
-            business_user=business_user,
-            status=status_filter
-        ).count()
-
-        return Response({"order_count": order_count, "status": status_filter}, status=status.HTTP_200_OK)
+            order_count = orders.count()
+            return Response({"order_count": order_count}, status=status.HTTP_200_OK)
 
     
 class BaseInfoView(APIView):
