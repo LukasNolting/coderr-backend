@@ -7,6 +7,8 @@ import os
 
 
 def activate_user(request, uidb64, token):
+    activate = os.getenv('REDIRECT_LOGIN')
+    activate_url = activate + '?msg=success'
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
         user = CustomUser.objects.get(pk=uid)
@@ -19,7 +21,7 @@ def activate_user(request, uidb64, token):
             messages.success(request, 'Your account has been activated.')
         else:
             messages.info(request, 'Your account is already activated.')
-        return redirect(os.getenv('REDIRECT_LOGIN'))
+        return redirect(activate_url)
     else:
         messages.error(request, 'The activation link is invalid!')
         return redirect(os.getenv('REDIRECT_LANDING'))
