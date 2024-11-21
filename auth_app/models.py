@@ -13,10 +13,10 @@ class CustomUser(AbstractUser):
     ]
     username = models.CharField(max_length=50, unique=True)
     file = models.FileField(blank=True, null=True)
-    location = models.CharField(max_length=50, blank=True, null=True)
-    tel = models.CharField(max_length=50, blank=True, null=True)
-    description = models.CharField(max_length=500, blank=True, null=True)
-    working_hours = models.CharField(max_length=50, blank=True, null=True)
+    location = models.CharField(max_length=50, blank=True, null=True, default="")
+    tel = models.CharField(max_length=50, blank=True, null=True, default="")
+    description = models.CharField(max_length=500, blank=True, null=True, default="")
+    working_hours = models.CharField(max_length=50, blank=True, null=True, default="")
     email = models.EmailField(unique=True)
     created_at = models.DateField(default=now)
     type = models.CharField(
