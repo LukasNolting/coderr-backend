@@ -3,7 +3,6 @@ from .views import BaseInfoView, InitDBService, OrderCountAPIView
 from offers_app.views import OfferDetailView
 from profile_app.views import BusinessProfileView, CustomerProfileView
 from auth_app.views import LoginView, RegisterView, RequestPasswordReset, PasswordResetView, VerifyTokenView
-# SETTINGS.PY die APPS ergänzen
 
 urlpatterns = [ 
     path('offers/', include('offers_app.urls')), 

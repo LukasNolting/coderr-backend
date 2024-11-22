@@ -16,6 +16,17 @@ class OrderAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk=None):
+        """
+        Retrieves order(s) for the authenticated user.
+
+        Parameters:
+        pk (int, optional): The primary key of the order to retrieve. If not provided, retrieves all orders
+                            associated with the authenticated user.
+
+        Returns:
+        Response: A JSON response containing the serialized order data. If a specific order is requested 
+                and the user is neither the customer nor the business user, returns a 403 error response.
+        """
         if pk:
             order = get_object_or_404(Order, pk=pk)
             if order.customer_user != request.user and order.business_user != request.user:
@@ -32,6 +43,25 @@ class OrderAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
+        """
+        Creates a new order for the authenticated user.
+
+        Parameters:
+        request (Request): The request sent by the client.
+
+        Returns:
+        Response: A JSON response containing the serialized order data. If the user is not a customer, 
+                returns a 403 error response. If neither offer_id nor offer_detail_id is provided, 
+                returns a 400 error response. If the offer or offer_detail is not found, returns a 404 
+                error response. If the offer's user is not the business user, returns a 400 error response.
+
+        Notes:
+        - The authenticated user must be a customer.
+        - The request body must contain either 'offer_id' or 'offer_detail_id'.
+        - If the request body contains 'offer_detail_id', the offer's details are used.
+        - If the request body contains 'offer_id', the offer's details must be provided in the request 
+          body.
+        """
         data = request.data
         if request.user.type != 'customer':
             return Response({'error': 'Nur Kunden dürfen Bestellungen erstellen.'}, status=status.HTTP_403_FORBIDDEN)
@@ -44,7 +74,7 @@ class OrderAPIView(APIView):
 
         if offer_detail_id:
             offer_detail = get_object_or_404(OfferDetail, pk=offer_detail_id)
-            offer_id = offer_detail.offer.id  # Zuordnung zur Offer-Instanz
+            offer_id = offer_detail.offer.id
             revisions = offer_detail.revisions
             delivery_time_in_days = offer_detail.delivery_time_in_days
             price = offer_detail.price
@@ -67,7 +97,25 @@ class OrderAPIView(APIView):
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    
     def patch(self, request, pk):
+        """
+        Partially updates an existing order.
+
+        Updates the status of an order. Only the `status` field can be updated.
+
+        Parameters:
+        pk (int): The id of the order to be updated.
+        request (Request): A request object containing the new status in the request body.
+
+        Returns:
+        Response: A response object containing the updated order data with status 200.
+
+        If the user is not the customer or the business user of the order, a 403 response is returned.
+
+        If the request body does not contain a valid status, a 400 response is returned.
+        """
         order = get_object_or_404(Order, pk=pk)
 
         if order.customer_user != request.user and order.business_user != request.user:
@@ -92,6 +140,17 @@ class OrderCountAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
+        """
+        Returns the count of orders that are in progress for a given business user.
+
+        Parameters:
+        pk (int): The id of the business user.
+
+        Returns:
+        Response: A response object containing the count of orders in progress with status 200.
+
+        If an error occurs while retrieving the count, a 500 response is returned.
+        """
         try:
 
             order_count = Order.objects.filter(business_user_id=pk, status="in_progress").count()
@@ -105,6 +164,17 @@ class CompletedOrderCountAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
+        """
+        Returns the count of completed orders for a given business user.
+
+        Parameters:
+        pk (int): The id of the business user.
+
+        Returns:
+        Response: A response object containing the count of completed orders with status 200.
+
+        If an error occurs while retrieving the count, a 500 response is returned.
+        """
         try:
 
             completed_order_count = Order.objects.filter(business_user_id=pk, status="completed").count()

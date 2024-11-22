@@ -19,6 +19,26 @@ class OrderCountAPIView(APIView):
     """
 
     def get(self, request, business_user_id):
+        """
+        Returns the count of orders for a specific business user.
+        
+        Supports general filtering or counting only completed orders.
+
+        Parameters:
+        business_user_id (int): The ID of the business user whose order count is to be retrieved.
+
+        Returns:
+        Response: A JSON response containing the order count.
+
+        If the URL name contains 'completed-order-count', the response will contain the
+        count of completed orders. Otherwise, it will contain the count of all orders.
+
+        If the 'status' parameter is set, the response will contain the count of orders
+        with the specified status. Valid statuses are: 'in_progress', 'completed', 'cancelled'.
+
+        If the 'status' parameter is set to an invalid value, a 400 response will be returned.
+
+        """
         User = CustomUser
         business_user = get_object_or_404(User, pk=business_user_id)
 
@@ -51,6 +71,10 @@ class BaseInfoView(APIView):
     average rating, number of business profiles, and number of offers.
     """
     def get(self, request, *args, **kwargs):
+        """
+        API endpoint that provides basic platform statistics, including the number of reviews,
+        average rating, number of business profiles, and number of offers.
+        """
         
         review_count = Review.objects.count()
         average_rating = Review.objects.aggregate(avg_rating=Avg('rating'))['avg_rating']
@@ -89,7 +113,14 @@ class InitDBService(APIView):
         return random_date
     
     def get(self, request, *args, **kwargs):
+        """
+        Initializes the database with demo data.
 
+        This method is used to populate the database with sample data for demonstration purposes.
+        It creates a set of customer and business users, each with a set of associated offers, orders, and reviews.
+        The data is randomly generated and includes a variety of offer types, prices, and descriptions.
+        The method returns a JSON response with a success message and a HTTP status code of 200.
+        """
         CustomUser.objects.filter(username__startswith='demo_').delete()
         Offer.objects.filter(user__username__startswith='demo_').delete()
         Review.objects.filter(reviewer__username__startswith='demo_').delete()
