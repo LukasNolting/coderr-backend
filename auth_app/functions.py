@@ -7,6 +7,20 @@ import os
 
 
 def activate_user(request, uidb64, token):
+    """
+    Activates a user account if the provided token is valid.
+
+    Args:
+        request: The HTTP request object.
+        uidb64: Base64 encoded user ID.
+        token: Token for validating the activation request.
+
+    Returns:
+        A redirect response to the login page with a success message
+        if activation is successful. If the account is already activated,
+        redirects with an info message. If activation fails, redirects to
+        the landing page with an error message.
+    """
     activate = os.getenv('REDIRECT_LOGIN')
     activate_url = activate + '?msg=success'
     try:

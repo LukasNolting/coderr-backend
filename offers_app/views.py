@@ -25,6 +25,19 @@ class OfferAPIView(APIView):
     pagination_class = OfferPagination
 
     def get(self, request, pk=None):
+        """
+        Handles GET requests to retrieve a single offer or a list of offers with optional filtering, searching, and ordering.
+
+        If a primary key (pk) is provided, it attempts to retrieve the corresponding offer
+        annotated with minimum price and delivery time. If not found, returns a 404 response.
+
+        If no pk is provided, it retrieves all offers with optional filters and search, such as:
+        - Filtering by creator_id, min_price, max_price, and max_delivery_time.
+        - Searching by title or description.
+        - Ordering by specified fields like min_price, max_price, min_delivery_time, and updated_at.
+
+        Applies pagination to the results and returns a paginated response of serialized offer data.
+        """
         if pk:
             try:
                 offer = Offer.objects.annotate(
@@ -41,12 +54,10 @@ class OfferAPIView(APIView):
                 min_delivery_time=Min('details__delivery_time_in_days')
             )
 
-            # Filter: creator_id
             creator_id = request.query_params.get('creator_id')
             if creator_id:
                 offers = offers.filter(user_id=creator_id)
 
-            # Filter: min_price
             min_price = request.query_params.get('min_price')
             if min_price:
                 try:
@@ -55,7 +66,6 @@ class OfferAPIView(APIView):
                 except ValueError:
                     return Response({'error': 'min_price muss eine gültige Zahl sein.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Filter: max_price
             max_price = request.query_params.get('max_price')
             if max_price:
                 try:
@@ -64,7 +74,6 @@ class OfferAPIView(APIView):
                 except ValueError:
                     return Response({'error': 'max_price muss eine gültige Zahl sein.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Filter: max_delivery_time
             max_delivery_time = request.query_params.get('max_delivery_time')
             if max_delivery_time:
                 try:
@@ -73,14 +82,12 @@ class OfferAPIView(APIView):
                 except ValueError:
                     return Response({'error': 'max_delivery_time muss eine ganze Zahl sein.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Filter: search
             search = request.query_params.get('search')
             if search:
                 offers = offers.filter(
                     Q(title__icontains=search) | Q(description__icontains=search)
                 )
 
-            # Sortierung: ordering
             ordering = request.query_params.get('ordering')
             if ordering:
                 ordering_fields = ordering.split(',')
@@ -94,7 +101,6 @@ class OfferAPIView(APIView):
                     '-updated_at': '-updated_at',
                 }
 
-                # Mapping der validen Felder auf die Query
                 resolved_ordering = [
                     valid_fields[field] for field in ordering_fields if field in valid_fields
                 ]
@@ -107,16 +113,20 @@ class OfferAPIView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             else:
-                # Standard-Sortierung: Kürzeste Lieferzeit zuerst
                 offers = offers.order_by('min_delivery_time')
 
-            # Pagination
             paginator = OfferPagination()
             result_page = paginator.paginate_queryset(offers, request)
             serializer = OfferSerializer(result_page, many=True)
             return paginator.get_paginated_response(serializer.data)
             
     def post(self, request):
+        """
+        Handles POST requests to create a new offer with its related details.
+
+        Returns a response with the newly created offer and its details if successful.
+        Otherwise, returns a 400 response with an error message.
+        """
         if request.user.type != 'business':
             return Response(
                 {'error': 'Nur Business-Benutzer dürfen Angebote erstellen.'},
@@ -138,7 +148,6 @@ class OfferAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Angebot erstellen
         offer = Offer.objects.create(
             user=request.user,
             title=data.get('title'),
@@ -146,9 +155,8 @@ class OfferAPIView(APIView):
             image=data.get('image'),
         )
 
-        created_details = []  # Liste für erstellte OfferDetail-Objekte
+        created_details = []
         for detail_data in details:
-            # Konvertiere 'revisions' in Integer
             try:
                 revisions = int(detail_data.get('revisions', 0))
             except ValueError:
@@ -157,14 +165,12 @@ class OfferAPIView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Überprüfe den konvertierten Wert
             if revisions < -1:
                 return Response(
                     {'error': 'Revisions müssen -1 (unbegrenzt) oder größer sein.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Konvertiere 'delivery_time_in_days' in Integer
             try:
                 delivery_time_in_days = int(detail_data.get('delivery_time_in_days', 0))
             except ValueError:
@@ -196,19 +202,29 @@ class OfferAPIView(APIView):
             )
             created_details.append(offer_detail)
 
-        # Serialisiere die erstellten Angebotsdetails
         details_serializer = OfferDetailSerializer(created_details, many=True)
 
-        # Rückgabe mit allen Angebotsdetails
         return Response({
             "id": offer.id,
             "title": offer.title,
             "description": offer.description,
             "features": offer.features,
-            "details": details_serializer.data,  # Alle Details hier inkludiert
+            "details": details_serializer.data,
         }, status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk=None):
+        """
+        Handles DELETE requests to remove an existing offer.
+
+        Validates that a primary key (pk) is provided and that the offer exists.
+        Ensures that the request user is authorized to delete the offer.
+
+        Returns:
+            - 400 response if no pk is provided.
+            - 404 response if the offer does not exist.
+            - 403 response if the user is not authorized to delete the offer.
+            - 204 response with a success message if the offer is successfully deleted.
+        """
         if not pk:
             return Response(
                 {'error': 'Ein Angebots-ID muss angegeben werden.'},
@@ -216,7 +232,6 @@ class OfferAPIView(APIView):
             )
 
         try:
-            # Angebot abrufen
             offer = Offer.objects.get(pk=pk)
         except Offer.DoesNotExist:
             return Response(
@@ -224,14 +239,12 @@ class OfferAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Überprüfen, ob der Benutzer der Ersteller des Angebots ist
         if offer.user != request.user:
             return Response(
                 {'error': 'Nicht autorisiert, dieses Angebot zu löschen.'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # Angebot löschen
         offer.delete()
         return Response(
             {'message': f'Angebot mit ID {pk} wurde erfolgreich gelöscht.'},
@@ -239,6 +252,18 @@ class OfferAPIView(APIView):
         )
         
     def patch(self, request, pk=None):
+        """
+        Handles PATCH requests to update an existing offer.
+
+        Validates that a primary key (pk) is provided and that the offer exists.
+        Ensures that the request user is authorized to update the offer.
+
+        Returns:
+            - 400 response if no pk is provided.
+            - 404 response if the offer does not exist.
+            - 403 response if the user is not authorized to update the offer.
+            - 200 response with a success message if the offer is successfully updated.
+        """
         if not pk:
             return Response(
                 {'error': 'Ein Angebots-ID muss angegeben werden.'},
@@ -246,7 +271,6 @@ class OfferAPIView(APIView):
             )
 
         try:
-            # Angebot abrufen
             offer = Offer.objects.get(pk=pk)
         except Offer.DoesNotExist:
             return Response(
@@ -254,37 +278,31 @@ class OfferAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Überprüfen, ob der Benutzer berechtigt ist, das Angebot zu bearbeiten
         if offer.user != request.user:
             return Response(
                 {'error': 'Nicht autorisiert, dieses Angebot zu bearbeiten.'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # Hauptdaten des Angebots aktualisieren
         offer.title = request.data.get('title', offer.title)
         offer.description = request.data.get('description', offer.description)
 
-        # Überprüfen, ob ein neues Bild hochgeladen wurde
         if 'image' in request.data:
             offer.image = request.data.get('image')
 
         offer.save()
 
-        # Details aktualisieren
         details = request.data.get('details', [])
         if details:
             for detail_data in details:
                 detail_id = detail_data.get('id')
 
                 try:
-                    # Detail abrufen oder neu erstellen
                     if detail_id:
                         detail = OfferDetail.objects.get(pk=detail_id, offer=offer)
                     else:
                         detail = OfferDetail(offer=offer)
 
-                    # Detailwerte aktualisieren
                     detail.title = detail_data.get('title', detail.title)
                     detail.revisions = int(detail_data.get('revisions', detail.revisions))
                     detail.delivery_time_in_days = int(detail_data.get('delivery_time_in_days', detail.delivery_time_in_days))
@@ -305,7 +323,6 @@ class OfferAPIView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-        # Erfolgsmeldung zurückgeben
         return Response(
             {'message': f'Angebot mit ID {pk} wurde erfolgreich aktualisiert.'},
             status=status.HTTP_200_OK
@@ -317,6 +334,21 @@ class OfferDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk=None):
+        """
+        GET /offers/<int:pk>/
+
+        Returns a single offer detail with the given ID.
+
+        GET /offers/
+
+        Returns a list of all offer details.
+
+        Parameters:
+        pk (int): The ID of the offer detail to retrieve.
+
+        Returns:
+        Response: A JSON response containing the serialized offer detail or a list of offer details.
+        """
         if pk:
             try:
                 detail = OfferDetail.objects.get(pk=pk)
