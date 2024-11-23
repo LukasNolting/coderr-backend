@@ -20,7 +20,7 @@ from coderr import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('coderr/admin/', admin.site.urls),
     path('api/', include('coderr_app.urls')),
     path('auth/', include('auth_app.urls')),
 ]
