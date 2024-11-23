@@ -222,7 +222,6 @@ class OfferAPIView(APIView):
             "id": offer.id,
             "title": offer.title,
             "description": offer.description,
-            "features": offer.features,
             "details": details_serializer.data,
         }, status=status.HTTP_201_CREATED)
 
