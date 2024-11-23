@@ -6,9 +6,13 @@ from auth_app.models import CustomUser
 
 class ProfileAPITests(TestCase):
     def setUp(self):
+        
+        """
+        Initialize the APIClient, create test users and authenticate them.
+        The users created are a customer, a business, and a staff user.
+        """
         self.client = APIClient()
 
-        # Create users
         self.customer_user = CustomUser.objects.create_user(
             username="testuser",
             email="testuser@example.com",
@@ -42,7 +46,6 @@ class ProfileAPITests(TestCase):
         self.authenticate_user(self.customer_user)
         url = reverse('profile-detail', kwargs={'pk': self.customer_user.id})
         response = self.client.get(url)
-        print(response.status_code, response.data)  # Debugging output
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('username', response.data)
         self.assertEqual(response.data['username'], "testuser")
@@ -52,7 +55,6 @@ class ProfileAPITests(TestCase):
         self.authenticate_user(self.staff_user)
         url = reverse('profile-detail', kwargs={'pk': self.customer_user.id})
         response = self.client.get(url)
-        print(response.status_code, response.data)  # Debugging output
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['username'], "testuser")
 
@@ -61,7 +63,6 @@ class ProfileAPITests(TestCase):
         self.authenticate_user(self.business_user)
         url = reverse('profile-detail', kwargs={'pk': self.customer_user.id})
         response = self.client.get(url)
-        print(response.status_code)  # Debugging output
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_user_profile(self):
@@ -70,7 +71,6 @@ class ProfileAPITests(TestCase):
         url = reverse('profile-detail', kwargs={'pk': self.customer_user.id})
         data = {"location": "New Location"}
         response = self.client.patch(url, data, format='json')
-        print(response.status_code, response.data)  # Debugging output
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.customer_user.refresh_from_db()
         self.assertEqual(self.customer_user.location, "New Location")
@@ -81,7 +81,6 @@ class ProfileAPITests(TestCase):
         url = reverse('profile-detail', kwargs={'pk': self.customer_user.id})
         data = {"location": "Staff Updated Location"}
         response = self.client.patch(url, data, format='json')
-        print(response.status_code, response.data)  # Debugging output
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.customer_user.refresh_from_db()
         self.assertEqual(self.customer_user.location, "Staff Updated Location")
@@ -90,7 +89,6 @@ class ProfileAPITests(TestCase):
         """Test retrieving all business profiles."""
         url = reverse('business-profile')
         response = self.client.get(url)
-        print(response.status_code, response.data)  # Debugging output
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data), 1)
         usernames = [profile['username'] for profile in response.data]
@@ -101,6 +99,5 @@ class ProfileAPITests(TestCase):
         self.authenticate_user(self.customer_user)
         url = reverse('customer-profile')
         response = self.client.get(url)
-        print(response.status_code, response.data)  # Debugging output
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['username'], "testuser")
