@@ -26,14 +26,12 @@ class OfferAPITests(TestCase):
             is_active=True
         )
 
-        # Create an offer
         self.offer = Offer.objects.create(
             user=self.business_user,
             title="Test Offer",
             description="A test offer description",
         )
 
-        # Create offer details
         OfferDetail.objects.create(
             offer=self.offer,
             title="Basic Plan",
