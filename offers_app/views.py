@@ -13,6 +13,14 @@ from .serializers import OfferSerializer, OfferDetailSerializer
 from django.db.models import Min
 
 class OfferPagination(PageNumberPagination):
+    """
+    Custom pagination class for offers.
+
+    Attributes:
+        page_size (int): The default number of offers per page.
+        page_size_query_param (str): Query parameter to customize page size.
+        max_page_size (int): The maximum number of offers per page.
+    """
     page_size = 6
     page_size_query_param = 'page_size'
     max_page_size = 100
@@ -20,6 +28,12 @@ class OfferPagination(PageNumberPagination):
 
 
 class OfferAPIView(APIView):
+    """
+    API endpoint to manage offers.
+
+    Supports operations such as retrieving offers (single or list),
+    creating new offers, updating existing ones, and deleting offers.
+    """
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     pagination_class = OfferPagination
@@ -330,6 +344,12 @@ class OfferAPIView(APIView):
 
 
 class OfferDetailView(APIView):
+    """
+    API endpoint to manage offer details.
+
+    Supports retrieving a single offer detail or a list of all offer details.
+    """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 

@@ -24,30 +24,49 @@ from .serializers import LoginSerializer
 
 load_dotenv()
 
+
 class LoginView(APIView):
+    """
+    Handles user login.
+
+    This view authenticates users and provides them with an authentication token
+    upon successful login.
+    """
+
     authentication_classes = []
     permission_classes = []
 
     def post(self, request, *args, **kwargs):
         """
-        Handles login requests.
+        Handle POST requests for user login.
 
         Args:
             request (Request): The HTTP request containing the user credentials.
 
         Returns:
-            Response: A JSON response containing the authentication token if the credentials are valid, otherwise a JSON response with the errors.
+            Response: JSON response containing:
+                - 'token': Authentication token.
+                - 'username': The user's username.
+                - 'user_id': The user's ID.
+            If authentication fails, returns a JSON response with the errors.
         """
+
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-          user = serializer.validated_data['user']
-          token, created = Token.objects.get_or_create(user=user)
-          return Response({'token': token.key, 'username': user.username, 'user_id': user.id}, status=status.HTTP_200_OK)
+            user = serializer.validated_data['user']
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key, 'username': user.username, 'user_id': user.id}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class RegisterView(generics.CreateAPIView):
+    """
+    Handles user registration.
+
+    Provides a view for creating new users using the CustomUser model and
+    the UserSerializer serializer.
+    """
+
     authentication_classes = []
     permission_classes = []
     queryset = CustomUser.objects.all()
@@ -55,26 +74,28 @@ class RegisterView(generics.CreateAPIView):
 
 
 class RequestPasswordReset(APIView):
+    """
+    Handles password reset requests.
+
+    Generates a password reset token for a user and sends an email with
+    a link to reset the password.
+    """
+
     permission_classes = [AllowAny]
-    TokenAuthentication = [AllowAny]
-    CustomUser = get_user_model()
     serializer_class = ResetPasswordRequestSerializer
 
     def post(self, request):
         """
-        Handles the password reset request by generating a token and sending a reset email.
+        Handle POST requests to initiate a password reset.
 
         Args:
-            request: The request object containing the user's email.
-
-        The function checks if a user with the provided email exists. If the user exists,
-        it generates a password reset token, saves it, and sends an email to the user
-        with a reset link. If the email is not found, a 404 response is returned.
+            request (Request): The request containing the user's email address.
 
         Returns:
-            Response: A success message with a 200 status if the email is sent successfully.
-            Response: An error message with a 404 status if the user is not found.
+            Response: A success message if the email is found, or an error
+            message if the email does not correspond to a user.
         """
+
         email = request.data['email']
         user = CustomUser.objects.filter(email__iexact=email).first()
 
@@ -116,21 +137,27 @@ class RequestPasswordReset(APIView):
 
 
 class PasswordResetView(APIView):
+    """
+    Handles the password reset process.
+
+    Allows users to validate their reset token and reset their password.
+    """
+
     permission_classes = []
 
     def get(self, request, token):
         """
-        Check if the given token is valid and not expired.
+        Validate a password reset token.
 
         Args:
             request (Request): The request object.
-            token (str): The token to check.
+            token (str): The token to validate.
 
         Returns:
-            Response: 200 with {'success': 'Token is valid'} if the token is valid and not expired.
-            Response: 400 with {'error': 'Invalid token'} if the token is not valid.
-            Response: 400 with {'error': 'Token expired'} if the token is expired.
+            Response: A success message if the token is valid, or an error message
+            if the token is invalid or expired.
         """
+
         reset_obj = PasswordReset.objects.filter(token=token).first()
         if not reset_obj:
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
@@ -143,22 +170,24 @@ class PasswordResetView(APIView):
 
     def post(self, request, token):
         """
-        Resets the password for the given user
+        Reset the user's password.
 
         Args:
-            request: The request object
-            token: The token from the password reset email
+            request (Request): The request containing the new password.
+            token (str): The token used to validate the password reset request.
 
         Returns:
-            A response object with a status code and a message
+            Response: A success message if the password is updated, or an error
+            message if the token is invalid or expired.
         """
+
         reset_obj = PasswordReset.objects.filter(token=token).first()
         if not reset_obj:
-            return Response({'error': 'Invalid token'}, status=400)
+            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
         token_lifetime = timedelta(hours=24)
         if timezone.now() > reset_obj.created_at + token_lifetime:
-            return Response({'error': 'Token expired'}, status=400)
+            return Response({'error': 'Token expired'}, status=status.HTTP_400_BAD_REQUEST)
 
         user = CustomUser.objects.filter(email=reset_obj.email).first()
         if user:
@@ -167,24 +196,31 @@ class PasswordResetView(APIView):
             reset_obj.delete()
             return Response({'success': 'Password updated'})
         else:
-            return Response({'error': 'No user found'}, status=404)
+            return Response({'error': 'No user found'}, status=status.HTTP_404_NOT_FOUND)
+
 
 class VerifyTokenView(APIView):
+    """
+    Verifies the validity of an authentication token.
+
+    Compares the token provided by the frontend with the token in the request's
+    authentication header.
+    """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
         """
-        Verify a token sent by the frontend is valid.
+        Verify the token provided by the frontend.
 
-        The frontend token is compared with the user's token in the request's
-        authentication header. If the two match, a 200 response is returned,
-        indicating that the token is valid. If the two do not match, a 401
-        response is returned, indicating that the token is not valid.
+        Args:
+            request (Request): The request containing the token to verify.
 
-        :param request: The request object
-        :return: A response with a status of 200 if the token is valid, 401 otherwise
+        Returns:
+            Response: 200 if the token is valid, or 401 if it is not.
         """
+
         frontend_token = request.data.get('token')
         user_token = request.auth
         
