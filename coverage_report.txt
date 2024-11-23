@@ -1,0 +1,10 @@
+Name                   Stmts   Miss  Cover
+------------------------------------------
+auth_app/tests.py         59      6    90%
+coderr_app/tests.py       45      0   100%
+offers_app/tests.py       55      0   100%
+orders_app/tests.py       59      0   100%
+profile_app/tests.py      60      0   100%
+review_app/tests.py       64      0   100%
+------------------------------------------
+TOTAL                    342      6    98%
