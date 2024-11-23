@@ -163,7 +163,7 @@ STATIC_URL = 'coderr/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
-MEDIA_URL = 'coderr/media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
