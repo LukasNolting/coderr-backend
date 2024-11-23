@@ -4,8 +4,13 @@ from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
     """
-    Serializer for CustomUser model, including handling for 'type'.
+    Serializer for the CustomUser model.
+
+    Handles the creation of new users, ensuring password validation
+    and providing fields for 'email', 'username', 'password',
+    'repeated_password', and 'type'.
     """
+
     password = serializers.CharField(write_only=True)
     repeated_password = serializers.CharField(write_only=True)
 
@@ -15,17 +20,33 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """
-        Validate that passwords match and type is either 'Customer' or 'business'.
+        Validate that passwords match and 'type' is either 'customer' or 'business'.
+
+        Args:
+            data (dict): Input data from the user.
+
+        Returns:
+            dict: Validated data.
+
+        Raises:
+            serializers.ValidationError: If the passwords do not match.
         """
+
         if data['password'] != data['repeated_password']:
             raise serializers.ValidationError("Passwörter stimmen nicht überein.")
-        
         return data
 
     def create(self, validated_data):
         """
-        Create a new user instance after stripping out repeated_password.
+        Create a new user instance after stripping out 'repeated_password'.
+
+        Args:
+            validated_data (dict): Validated data from the serializer.
+
+        Returns:
+            CustomUser: The created user instance.
         """
+
         validated_data.pop('repeated_password')
         password = validated_data.pop('password')
         user = CustomUser(**validated_data)
@@ -35,21 +56,34 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
+    """
+    Serializer for user login.
+
+    Validates login credentials, including 'username', 'password', and an optional
+    'remember' field for session persistence.
+    """
+
     username = serializers.CharField()
     password = serializers.CharField()
     remember = serializers.BooleanField(required=False)
 
     def validate(self, data):
         """
-        Validates the given data for a login request.
+        Validate the provided login credentials.
 
-        :param data: A dictionary of the given data
-        :return: The validated data with the user object added
-        :raises: serializers.ValidationError if the credentials are invalid
-        :raises: serializers.ValidationError if either email or password is empty
+        Args:
+            data (dict): Input data for login.
+
+        Returns:
+            dict: Validated data including the authenticated user.
+
+        Raises:
+            serializers.ValidationError: If credentials are invalid or fields are empty.
         """
+
         username = data.get('username')
         password = data.get('password')
+
         if username and password:
             user = authenticate(username=username, password=password)
             if not user:
@@ -58,7 +92,14 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Both fields must be filled")
 
         data['user'] = user
-        return data        
+        return data
+
 
 class ResetPasswordRequestSerializer(serializers.Serializer):
+    """
+    Serializer for requesting a password reset.
+
+    Validates that a valid email is provided.
+    """
+
     email = serializers.EmailField(required=True)

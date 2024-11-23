@@ -33,6 +33,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
         instance (User): The User instance being saved.
         created (bool): Whether the instance is being created (True) or updated (False).
     """
+
     if created:
         Token.objects.create(user=instance)
 
@@ -47,6 +48,7 @@ def send_activation_email(sender, instance, created, **kwargs):
         instance (User): The User instance being saved
         created (bool): Whether the instance is being created (True) or updated (False)
     """
+
     if created and not instance.is_active:
         token = token_generator.make_token(instance)
         uid = urlsafe_base64_encode(force_bytes(instance.pk))

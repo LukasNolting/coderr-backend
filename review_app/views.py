@@ -7,32 +7,39 @@ from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
-from django_filters.rest_framework import DjangoFilterBackend
+
 
 class ReviewView(ListAPIView):
+    """
+    API endpoint for managing reviews.
+
+    Provides methods to:
+    - Retrieve a list of reviews (filtered and ordered as specified).
+    - Create a new review for a business user.
+    - Partially update an existing review.
+    - Delete a review.
+    """
+
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
     queryset = Review.objects.all()
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['business_user_id']
     ordering_fields = ['updated_at', 'rating']
-    
+
     def get(self, request, *args, **kwargs):
         """
         Retrieve a list of reviews based on the current user or a specific business user.
 
-        If a 'business_user_id' is provided in the query parameters, the method returns
-        reviews for that particular business user. If not, it retrieves reviews made by
-        the current user.
+        Args:
+            request (Request): The HTTP request object.
 
-        The queryset is filtered and ordered according to the specified filter and ordering
-        fields.
+        Query Parameters:
+            business_user_id (int, optional): The ID of the business user to filter reviews by.
 
         Returns:
-            Response: A JSON response containing the list of reviews with details such as
-            'id', 'business_user', 'reviewer', 'rating', 'description', 'created_at', and
-            'updated_at'. If an invalid 'business_user_id' is provided, a 400 BAD REQUEST
-            response is returned.
+            Response: A JSON response containing a list of reviews.
+                    If `business_user_id` is invalid, a 400 BAD REQUEST response is returned.
         """
         current_user = request.user
         business_user_id = request.query_params.get('business_user_id', None)
@@ -64,27 +71,22 @@ class ReviewView(ListAPIView):
         ]
         return Response(response_data, status=status.HTTP_200_OK)
 
-
     def post(self, request):
         """
         Create a new review for the given business user.
 
-        The request should contain the following data in the request body:
+        Args:
+            request (Request): The HTTP request object containing review data.
 
-        - 'business_user': The ID of the business user for which the review is to be created.
-        - 'rating': The rating given to the business user (integer from 1 to 5).
-        - 'description': A description of the review (string).
-
-        If any of the required fields are missing, a 400 BAD REQUEST response is returned.
-
-        If the review already exists for the given business user, a 400 BAD REQUEST response is returned.
-
-        If the business user does not exist, a 404 NOT FOUND response is returned.
+        Request Body:
+            business_user (int): The ID of the business user being reviewed.
+            rating (int): The rating given (1-5).
+            description (str): The review description.
 
         Returns:
-            Response: A JSON response containing the review details with fields 'id', 'business_user',
-            'reviewer', 'rating', 'description', 'created_at', and 'updated_at'. If the review is created
-            successfully, a 201 CREATED response is returned.
+            Response: A JSON response with the created review data and status 201 CREATED.
+                    If a required field is missing or a review already exists, returns 400 BAD REQUEST.
+                    If the business user does not exist, returns 404 NOT FOUND.
         """
         business_user_id = request.data.get('business_user')
         reviewer = request.user
@@ -118,15 +120,19 @@ class ReviewView(ListAPIView):
 
     def patch(self, request, pk):
         """
-        Partially update a review.
+        Partially update an existing review.
 
-        Only the 'rating' and 'description' fields can be updated. If the review does not exist or the user is not
-        authorized to update the review, a 404 NOT FOUND response is returned.
+        Args:
+            request (Request): The HTTP request object containing the fields to update.
+            pk (int): The primary key of the review to update.
+
+        Request Body:
+            rating (int, optional): The updated rating.
+            description (str, optional): The updated description.
 
         Returns:
-            Response: A JSON response containing the review details with fields 'id', 'business_user',
-            'reviewer', 'rating', 'description', 'created_at', and 'updated_at'. If the review is updated
-            successfully, a 200 OK response is returned.
+            Response: A JSON response with the updated review data and status 200 OK.
+                    If the review does not exist or the user is not authorized, returns 404 NOT FOUND.
         """
         try:
             review = Review.objects.get(pk=pk, reviewer=request.user)
@@ -154,12 +160,15 @@ class ReviewView(ListAPIView):
 
     def delete(self, request, pk):
         """
-        Delete a review.
+        Delete an existing review.
 
-        If the review does not exist or the user is not authorized to delete the review, a 404 NOT FOUND response is returned.
+        Args:
+            request (Request): The HTTP request object.
+            pk (int): The primary key of the review to delete.
 
         Returns:
-            Response: A JSON response containing a success message. If the review is deleted successfully, a 204 NO CONTENT response is returned.
+            Response: A JSON response with a success message and status 204 NO CONTENT.
+                    If the review does not exist or the user is not authorized, returns 404 NOT FOUND.
         """
         try:
             review = Review.objects.get(pk=pk, reviewer=request.user)

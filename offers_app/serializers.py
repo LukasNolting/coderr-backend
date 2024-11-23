@@ -2,7 +2,14 @@ from rest_framework import serializers
 from .models import Offer, OfferDetail
 from decimal import Decimal
 
+
 class OfferDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the OfferDetail model.
+
+    Serializes the details of an offer, including its price, title, delivery time,
+    and associated features.
+    """
     price = serializers.SerializerMethodField()
 
     class Meta:
@@ -10,7 +17,7 @@ class OfferDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'offer',
-            'offer_id', 
+            'offer_id',
             'title',
             'revisions',
             'delivery_time_in_days',
@@ -21,15 +28,28 @@ class OfferDetailSerializer(serializers.ModelSerializer):
 
     def get_price(self, obj):
         """
-        Returns the price of the offer detail as a string with two decimal places.
-        If the price is not a valid number, returns "0.00".
+        Get the price of the offer detail formatted as a string with two decimal places.
+
+        Args:
+            obj (OfferDetail): The OfferDetail instance.
+
+        Returns:
+            str: The formatted price as a string (e.g., "123.45").
+                 Returns "0.00" if the price is invalid.
         """
         try:
             return f"{Decimal(obj.price):.2f}"
         except (ValueError, TypeError):
             return "0.00"
 
+
 class OfferSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Offer model.
+
+    Serializes offers along with their details, including minimum price,
+    minimum delivery time, and associated user.
+    """
     details = OfferDetailSerializer(many=True)
     min_price = serializers.SerializerMethodField()
     min_delivery_time = serializers.SerializerMethodField()
@@ -53,8 +73,14 @@ class OfferSerializer(serializers.ModelSerializer):
 
     def get_min_price(self, obj):
         """
-        Returns the minimum price of the related OfferDetails as a string with two decimal places.
-        If the minimum price is not a valid number, returns "0.00".
+        Get the minimum price among the related OfferDetails.
+
+        Args:
+            obj (Offer): The Offer instance.
+
+        Returns:
+            str: The minimum price as a string with two decimal places (e.g., "123.45").
+                Returns "0.00" if no OfferDetails are associated.
         """
         min_price = obj.get_min_price()
         if min_price is not None:
@@ -63,21 +89,30 @@ class OfferSerializer(serializers.ModelSerializer):
 
     def get_min_delivery_time(self, obj):
         """
-        Returns the minimum delivery time of the related OfferDetails.
-        If the minimum delivery time is not a valid number, returns 0.
+        Get the minimum delivery time among the related OfferDetails.
+
+        Args:
+            obj (Offer): The Offer instance.
+
+        Returns:
+            int: The minimum delivery time in days. Returns 0 if no OfferDetails are associated.
         """
         min_delivery_time = obj.get_min_delivery_time()
         return min_delivery_time if min_delivery_time is not None else 0
 
-    def create(self, validated_data):      
+    def create(self, validated_data):
         """
-        Creates a new Offer instance with the given validated data, and
-        creates three related OfferDetail instances with the data given in the
-        'details' key of the validated data.
+        Create a new Offer instance and its related OfferDetails.
 
-        :raises serializers.ValidationError: If the 'details' key does not contain
-            exactly three dictionaries.
-        :return: The newly created Offer instance.
+        Args:
+            validated_data (dict): The validated data for creating the Offer.
+
+        Raises:
+            serializers.ValidationError: If the 'details' field does not contain
+            exactly three OfferDetails.
+
+        Returns:
+            Offer: The created Offer instance.
         """
         details_data = validated_data.pop('details', [])
         if len(details_data) != 3:
@@ -90,16 +125,18 @@ class OfferSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """
-        Updates an existing Offer instance with the given validated data, and
-        updates or creates related OfferDetail instances with the data given in
-        the 'details' key of the validated data.
+        Update an existing Offer instance and its related OfferDetails.
 
-        :raises serializers.ValidationError: If the 'details' key does not contain
-            exactly three dictionaries.
-        :param instance: The Offer instance to be updated.
-        :param validated_data: A dictionary containing the data to update the
-            Offer instance with.
-        :return: The updated Offer instance.
+        Args:
+            instance (Offer): The Offer instance to update.
+            validated_data (dict): The validated data for updating the Offer.
+
+        Raises:
+            serializers.ValidationError: If the 'details' field does not contain
+            exactly three OfferDetails.
+
+        Returns:
+            Offer: The updated Offer instance.
         """
         details_data = validated_data.pop('details', None)
         for attr, value in validated_data.items():

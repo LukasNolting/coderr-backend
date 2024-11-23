@@ -21,6 +21,7 @@ def activate_user(request, uidb64, token):
         redirects with an info message. If activation fails, redirects to
         the landing page with an error message.
     """
+
     activate = os.getenv('REDIRECT_LOGIN')
     activate_url = activate + '?msg=success'
     try:

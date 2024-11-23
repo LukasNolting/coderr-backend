@@ -12,6 +12,15 @@ from .models import Order
 
 
 class OrderAPIView(APIView):
+    """
+    API endpoint for managing orders.
+
+    This endpoint supports:
+    - Retrieving a single order or a list of orders for the authenticated user.
+    - Creating a new order for the authenticated user.
+    - Partially updating an order (e.g., updating its status).
+    """
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -60,7 +69,7 @@ class OrderAPIView(APIView):
         - The request body must contain either 'offer_id' or 'offer_detail_id'.
         - If the request body contains 'offer_detail_id', the offer's details are used.
         - If the request body contains 'offer_id', the offer's details must be provided in the request 
-          body.
+        body.
         """
         data = request.data
         if request.user.type != 'customer':
@@ -135,6 +144,9 @@ class OrderAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class OrderCountAPIView(APIView):
+    """
+    API endpoint to retrieve the count of orders in progress for a specific business user.
+    """
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -159,6 +171,9 @@ class OrderCountAPIView(APIView):
             return Response({'error': f'Ein Fehler ist aufgetreten: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CompletedOrderCountAPIView(APIView):
+    """
+    API endpoint to retrieve the count of completed orders for a specific business user.
+    """
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
