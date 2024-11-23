@@ -8,7 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from auth_app.models import CustomUser
 from .serializers import UserProfileSerializer, UserProfileUpdateSerializer, BusinessProfileSerializer, CustomProfileSerializer
+from rest_framework.exceptions import PermissionDenied
 
+from rest_framework.exceptions import PermissionDenied
 
 class ProfileView(APIView):
     """
@@ -31,10 +33,21 @@ class ProfileView(APIView):
 
         Returns:
             Response: A JSON response containing the serialized user data.
+            Raises:
+                PermissionDenied: If the user does not have access to the requested profile.
         """
         user = get_object_or_404(CustomUser, pk=pk)
+
+        # Debugging
+        print(f"Fetched user: {user.username}, Email: {user.email}, ID: {user.id}")
+
+        # Check permissions: only allow the owner or staff to access
+        if request.user != user and not request.user.is_staff:
+            raise PermissionDenied("You do not have permission to access this profile.")
+
         serializer = UserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
     def patch(self, request, pk):
         """
@@ -51,14 +64,13 @@ class ProfileView(APIView):
         user = get_object_or_404(CustomUser, pk=pk)
 
         if request.user != user and not request.user.is_staff:
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
-
+            raise PermissionDenied("Permission denied.")
+        
         serializer = UserProfileUpdateSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class BusinessProfileView(APIView):
     """

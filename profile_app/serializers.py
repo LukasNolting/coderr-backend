@@ -23,9 +23,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         """
         model = CustomUser
         fields = [
-            'id', 'username', 'first_name', 'last_name', 'file', 
-            'location', 'tel', 'description', 'working_hours', 
-            'type', 'email', 'created_at', 'user'
+            'id', 'username', 'first_name', 'last_name',
+            'file', 'location', 'tel', 'description',
+            'working_hours', 'type', 'email', 'created_at',
+            'user',  
         ]
 
 
@@ -97,8 +98,8 @@ class BusinessProfileSerializer(serializers.ModelSerializer):
         """
         model = CustomUser
         fields = [
-            'user', 'file', 'location', 'tel', 
-            'description', 'working_hours', 'type'
+            'username', 'user', 'file', 'location', 'tel',
+            'description', 'working_hours', 'type',
         ]
 
 
