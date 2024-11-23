@@ -21,8 +21,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('coderr/admin/', admin.site.urls),
-    path('api/', include('coderr_app.urls')),
-    path('auth/', include('auth_app.urls')),
+    path('coderr/api/', include('coderr_app.urls')),
+    path('coderr/auth/', include('auth_app.urls')),
 ]
 
 if settings.DEBUG:
