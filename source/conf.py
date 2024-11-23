@@ -20,8 +20,8 @@ django.setup()
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Coderr'
-copyright = '2024, Alex'
-author = 'Alex'
+copyright = '2024, Lukas Nolting'
+author = 'Lukas Nolting'
 release = '23.11.2024'
 
 # -- General configuration ---------------------------------------------------
