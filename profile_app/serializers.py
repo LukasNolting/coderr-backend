@@ -73,7 +73,7 @@ class BusinessUserSerializer(serializers.ModelSerializer):
             fields (list): A list of fields to include in the serialization.
         """
         model = CustomUser
-        fields = ['pk', 'username', 'first_name', 'last_name']
+        fields = ['pk', 'username', 'first_name', 'last_name', 'file']
 
 
 class BusinessProfileSerializer(serializers.ModelSerializer):
@@ -119,7 +119,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             fields (list): A list of fields to include in the serialization.
         """
         model = CustomUser
-        fields = ['pk', 'username', 'first_name', 'last_name']
+        fields = ['pk', 'username', 'first_name', 'last_name', 'file']
 
 
 class CustomProfileSerializer(serializers.ModelSerializer):
