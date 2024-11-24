@@ -10,8 +10,6 @@ from auth_app.models import CustomUser
 from .serializers import UserProfileSerializer, UserProfileUpdateSerializer, BusinessProfileSerializer, CustomProfileSerializer
 from rest_framework.exceptions import PermissionDenied
 
-from rest_framework.exceptions import PermissionDenied
-
 class ProfileView(APIView):
     """
     API endpoint for retrieving and updating user profiles.

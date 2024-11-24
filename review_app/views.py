@@ -41,7 +41,7 @@ class ReviewView(ListAPIView):
             Response: A JSON response containing a list of reviews.
                     If `business_user_id` is invalid, a 400 BAD REQUEST response is returned.
         """
-        current_user = request.user
+        current_user = request.query_params.get('reviewer_id', None)
         business_user_id = request.query_params.get('business_user_id', None)
 
         if business_user_id:
