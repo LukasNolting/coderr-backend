@@ -25,26 +25,14 @@ class ProfileView(APIView):
 
     def get(self, request, pk):
         """
-        Retrieve the profile of a user by primary key.
-
+        Retrieves the profile of a user with the given pk.
         Args:
-            request (Request): The HTTP request object.
-            pk (int): The primary key of the user to retrieve.
-
+            request: The request object.
+            pk: The primary key of the user to retrieve.
         Returns:
-            Response: A JSON response containing the serialized user data.
-            Raises:
-                PermissionDenied: If the user does not have access to the requested profile.
+            A Response object with the serialized user data and a status code of 200.
         """
         user = get_object_or_404(CustomUser, pk=pk)
-
-        # Debugging
-        print(f"Fetched user: {user.username}, Email: {user.email}, ID: {user.id}")
-
-        # Check permissions: only allow the owner or staff to access
-        if request.user != user and not request.user.is_staff:
-            raise PermissionDenied("You do not have permission to access this profile.")
-
         serializer = UserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
