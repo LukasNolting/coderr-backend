@@ -7,6 +7,7 @@ from orders_app.models import Order
 from auth_app.models import CustomUser
 from django.db.models import Avg
 import random
+import json
 from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404
 
@@ -134,10 +135,7 @@ class InitDBService(APIView):
             "Digital Builders", "NextGen IT", "FutureWorks", "Soft Solutions", "App Crafters", "Cloud Tech"
         ]
         
-        avatar_images = [
-            f'/avatar/user_{i}.jpg' for i in range(1, 11)
-        ]
-        
+        # Dynamisch Avatar-Dateinamen basierend auf Vornamen der Business-Nutzer erstellen
         business_descriptions = [
             "Ein führendes Unternehmen in der IT-Branche, das innovative Lösungen für komplexe Herausforderungen bietet.",
             "Bekannt für zuverlässige und skalierbare Softwarelösungen, die den Anforderungen moderner Unternehmen gerecht werden.",
@@ -150,10 +148,13 @@ class InitDBService(APIView):
             "Wir entwickeln digitale Produkte, die durch Kreativität und technisches Know-how überzeugen.",
             "Ihr Experte für flexible und agile IT-Lösungen, die sich den sich ändernden Anforderungen Ihres Unternehmens anpassen."
         ]
-
-
+        
         for i, name in enumerate(business_names):
             first_name, last_name = random.choice(customer_names).split(" ")
+            
+            # Avatar-Dateiname basierend auf dem Vornamen
+            avatar_filename = f"/avatar/{first_name.lower()}_avatar.jpg"
+
             user = CustomUser.objects.create_user(
                 username=f'demo_business_{i + 1}',
                 email=f'demo_business_{i + 1}@example.com',
@@ -166,10 +167,10 @@ class InitDBService(APIView):
                 tel=f'0151-{random.randint(1000000, 9999999)}',
                 description=random.choice(business_descriptions),
                 working_hours=f'{random.randint(8, 10)}:00 - {random.randint(16, 18)}:00',
-                file=random.choice(avatar_images)
+                file=avatar_filename  # Avatar basierend auf dem Vornamen
             )
             business_users.append(user)
-            
+ 
             offer_titles = [
                 "Umfassende Softwareentwicklung",
                 "Maßgeschneiderte IT-Lösungen",
@@ -206,23 +207,40 @@ class InitDBService(APIView):
                     description=random.choice(offer_descriptions),
                     image=random.choice(offer_images),
                 )
-                random_date = self.random_past_date()
-                offer.created_at = random_date
-                offer.updated_at = random_date
-                offer.save()
-                for offer_type, title_suffix in OfferDetail.OFFER_TYPES:
+                
+                
+                # Generiere eine Liste mit Preisen, ohne Duplikate zu entfernen
+                # Preise in aufsteigender Reihenfolge
+                prices = sorted([round(random.uniform(50, 150), 2), round(random.uniform(150, 300), 2), round(random.uniform(300, 500), 2)])
+
+                # Lieferzeiten in aufsteigender Reihenfolge
+                delivery_times = [random.randint(3, 5), random.randint(6, 8), random.randint(9, 12)]
+
+                # Schleife zur Erstellung der OfferDetails
+                for idx, (offer_type, title_suffix) in enumerate(OfferDetail.OFFER_TYPES):
                     OfferDetail.objects.create(
                         offer=offer,
                         title=f'{offer.title} - {title_suffix}',
                         revisions=random.choice([1, 3, 5]),
-                        delivery_time_in_days=random.randint(1, 10),
-                        price=round(random.uniform(50, 500), 2),
-                        features=[f"Ausstattungsmerkmal 1 {title_suffix}",
-                            f"Ausstattungsmerkmal extra {title_suffix}"
-                        ],
+                        delivery_time_in_days=delivery_times[idx],  # Lieferzeit in aufsteigender Reihenfolge
+                        price=prices[idx],  # Preis in aufsteigender Reihenfolge
+                        features=[f"{title_suffix} Design",
+                                f"{title_suffix} Hosting",
+                                f"{title_suffix} Support"],
                         offer_type=offer_type
                     )
 
+                random_date = self.random_past_date()
+                offer.created_at = random_date
+                offer.updated_at = random_date
+                offer.save()
+
+
+
+                
+                
+                
+                
                 customers = CustomUser.objects.filter(type='customer')
                 for k in range(2): 
                     customer = random.choice(customers)
@@ -237,6 +255,8 @@ class InitDBService(APIView):
                         features=offer_detail.features,
                         offer_type=offer_detail.offer_type,
                         status=random.choice(['in_progress', 'completed', 'cancelled']),
+                        created_at=self.random_past_date(),
+                        updated_at=self.random_past_date(),
                     )
                 random_date = self.random_past_date()
                 order.created_at = random_date
@@ -244,16 +264,16 @@ class InitDBService(APIView):
                 order.save()
                     
                 review_descriptions = [
-                    "{customer.first_name} war äußerst zufrieden mit dem Service, den {business_user.first_name} bereitgestellt hat. Sehr empfehlenswert für Softwareprojekte!",
-                    "{customer.first_name} schätzte die ausgezeichnete Kommunikation und pünktliche Lieferung von {business_user.first_name}. Tolle Erfahrung!",
-                    "Die Zusammenarbeit zwischen {customer.first_name} und {business_user.first_name} war nahtlos und produktiv. Erstklassiger Service!",
-                    "{business_user.first_name} bot {customer.first_name} außergewöhnliche Unterstützung und stellte sicher, dass alle Projektanforderungen erfüllt wurden.",
-                    "{customer.first_name} fand die von {business_user.first_name} angebotenen Lösungen innovativ und effektiv. Ein hochprofessionelles Team!",
-                    "Dank {business_user.first_name} wurde {customer.first_name}'s Projekt pünktlich mit herausragenden Ergebnissen abgeschlossen.",
-                    "Die Expertise und Liebe zum Detail von {business_user.first_name} beeindruckten {customer.first_name}. Würde definitiv empfehlen!",
-                    "{customer.first_name} lobte {business_user.first_name} für ihre Flexibilität und Fähigkeit, sich an wechselnde Bedürfnisse anzupassen.",
-                    "Der Service von {business_user.first_name} übertraf {customer.first_name}'s Erwartungen in jeder Hinsicht. Hervorragende Arbeit!",
-                    "Die Zusammenarbeit mit {business_user.first_name} war eine Freude für {customer.first_name}, der ihre Hingabe und Kompetenz schätzte."
+                    "Ich war äußerst zufrieden mit dem Service, den {business_user.first_name} bereitgestellt hat. Sehr empfehlenswert für Softwareprojekte!",
+                    "Ich schätzte die ausgezeichnete Kommunikation und pünktliche Lieferung von {business_user.first_name}. Tolle Erfahrung!",
+                    "Die Zusammenarbeit zwischen mir und {business_user.first_name} war nahtlos und produktiv. Erstklassiger Service!",
+                    "{business_user.first_name} bot mir außergewöhnliche Unterstützung und stellte sicher, dass alle Projektanforderungen erfüllt wurden.",
+                    "Ich fand die von {business_user.first_name} angebotenen Lösungen innovativ und effektiv. Ein hochprofessionelles Team!",
+                    "Dank {business_user.first_name} wurde mein Projekt pünktlich mit herausragenden Ergebnissen abgeschlossen.",
+                    "Die Expertise und Liebe zum Detail von {business_user.first_name} beeindruckten mich. Würde definitiv empfehlen!",
+                    "Ich lobe {business_user.first_name} für die Flexibilität und Fähigkeit, sich an wechselnde Bedürfnisse anzupassen.",
+                    "Der Service von {business_user.first_name} übertraf meine Erwartungen in jeder Hinsicht. Hervorragende Arbeit!",
+                    "Die Zusammenarbeit mit {business_user.first_name} war eine Freude für mich, der die Hingabe und Kompetenz schätzte."
                 ]
 
 
