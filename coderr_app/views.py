@@ -135,7 +135,6 @@ class InitDBService(APIView):
             "Digital Builders", "NextGen IT", "FutureWorks", "Soft Solutions", "App Crafters", "Cloud Tech"
         ]
         
-        # Dynamisch Avatar-Dateinamen basierend auf Vornamen der Business-Nutzer erstellen
         business_descriptions = [
             "Ein führendes Unternehmen in der IT-Branche, das innovative Lösungen für komplexe Herausforderungen bietet.",
             "Bekannt für zuverlässige und skalierbare Softwarelösungen, die den Anforderungen moderner Unternehmen gerecht werden.",
@@ -152,7 +151,6 @@ class InitDBService(APIView):
         for i, name in enumerate(business_names):
             first_name, last_name = random.choice(customer_names).split(" ")
             
-            # Avatar-Dateiname basierend auf dem Vornamen
             avatar_filename = f"/avatar/{first_name.lower()}_avatar.jpg"
 
             user = CustomUser.objects.create_user(
@@ -167,7 +165,7 @@ class InitDBService(APIView):
                 tel=f'0151-{random.randint(1000000, 9999999)}',
                 description=random.choice(business_descriptions),
                 working_hours=f'{random.randint(8, 10)}:00 - {random.randint(16, 18)}:00',
-                file=avatar_filename  # Avatar basierend auf dem Vornamen
+                file=avatar_filename  
             )
             business_users.append(user)
  
@@ -209,21 +207,17 @@ class InitDBService(APIView):
                 )
                 
                 
-                # Generiere eine Liste mit Preisen, ohne Duplikate zu entfernen
-                # Preise in aufsteigender Reihenfolge
                 prices = sorted([round(random.uniform(50, 150), 2), round(random.uniform(150, 300), 2), round(random.uniform(300, 500), 2)])
 
-                # Lieferzeiten in aufsteigender Reihenfolge
                 delivery_times = [random.randint(3, 5), random.randint(6, 8), random.randint(9, 12)]
 
-                # Schleife zur Erstellung der OfferDetails
                 for idx, (offer_type, title_suffix) in enumerate(OfferDetail.OFFER_TYPES):
                     OfferDetail.objects.create(
                         offer=offer,
                         title=f'{offer.title} - {title_suffix}',
                         revisions=random.choice([1, 3, 5]),
-                        delivery_time_in_days=delivery_times[idx],  # Lieferzeit in aufsteigender Reihenfolge
-                        price=prices[idx],  # Preis in aufsteigender Reihenfolge
+                        delivery_time_in_days=delivery_times[idx], 
+                        price=prices[idx], 
                         features=[f"{title_suffix} Design",
                                 f"{title_suffix} Hosting",
                                 f"{title_suffix} Support"],
