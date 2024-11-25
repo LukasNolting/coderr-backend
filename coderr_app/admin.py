@@ -19,10 +19,10 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('username', 'email', 'password')
         }),
         ('Personal Information', {
-            'fields': ('location', 'tel', 'description', 'working_hours', 'file')
+            'fields': ('first_name', 'last_name', 'location', 'tel', 'description', 'working_hours', 'file')
         }),
         ('Permissions and Status', {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
+            'fields': ('is_active', 'is_staff', 'is_superuser')
         }),
         ('Important Dates', {
             'fields': ('last_login', 'created_at')
