@@ -11,6 +11,7 @@ from django.db.models import Q
 from .models import Offer, OfferDetail
 from .serializers import OfferSerializer, OfferDetailSerializer
 from django.db.models import Min
+from .paginators import CustomPageNumberPagination
 
 class OfferPagination(PageNumberPagination):
     """
@@ -36,7 +37,7 @@ class OfferAPIView(APIView):
     """
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    pagination_class = OfferPagination
+    pagination_class = CustomPageNumberPagination
 
     def get(self, request, pk=None):
         """
@@ -129,11 +130,16 @@ class OfferAPIView(APIView):
             else:
                 offers = offers.order_by('min_delivery_time')
 
-            paginator = OfferPagination()
+            paginator = self.pagination_class()
             result_page = paginator.paginate_queryset(offers, request)
+
+            if paginator.page is None:
+                return paginator.get_paginated_response([])
+
             serializer = OfferSerializer(result_page, many=True)
             return paginator.get_paginated_response(serializer.data)
-            
+
+
     def post(self, request):
         """
         Handles POST requests to create a new offer with its related details.

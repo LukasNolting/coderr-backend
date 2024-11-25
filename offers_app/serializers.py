@@ -35,7 +35,7 @@ class OfferDetailSerializer(serializers.ModelSerializer):
 
         Returns:
             str: The formatted price as a string (e.g., "123.45").
-                 Returns "0.00" if the price is invalid.
+                Returns "0.00" if the price is invalid.
         """
         try:
             return f"{Decimal(obj.price):.2f}"
