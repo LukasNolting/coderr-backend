@@ -1,7 +1,6 @@
 alabaster==0.7.13
 asgiref==3.8.1
 babel==2.16.0
-backports.zoneinfo==0.2.1
 certifi==2024.8.30
 charset-normalizer==3.4.0
 Django==4.2.9
