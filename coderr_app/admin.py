@@ -11,7 +11,7 @@ class CustomUserAdmin(UserAdmin):
     """
     model = CustomUser
 
-    list_display = ('username', 'email', 'type', 'is_active', 'created_at')
+    list_display = ('username', 'email', 'type', 'is_active', 'created_at', 'first_name', 'last_name')
     list_filter = ('type', 'is_active', 'created_at')
 
     fieldsets = (
