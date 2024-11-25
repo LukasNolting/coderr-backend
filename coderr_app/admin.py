@@ -3,20 +3,48 @@ from auth_app.models import CustomUser, PasswordReset
 from offers_app.models import Offer, OfferDetail
 from orders_app.models import Order
 from review_app.models import Review
+from django.contrib.auth.admin import UserAdmin
 
-
-@admin.register(CustomUser)
-class UserAdmin(admin.ModelAdmin):
+class CustomUserAdmin(UserAdmin):
     """
-    Admin panel configuration for the CustomUser model.
-
-    Displays user-specific fields such as email, username, and status,
-    and provides filtering, searching, and ordering options.
+    Custom admin interface for managing CustomUser instances.
     """
-    list_display = ('email', 'username', 'is_active', 'is_staff')
-    list_filter = ('is_active', 'is_staff')
-    search_fields = ('email', 'username', 'is_active', 'is_staff')
-    ordering = ('email',)
+    model = CustomUser
+
+    list_display = ('username', 'email', 'type', 'is_active', 'created_at', 'first_name', 'last_name')
+    list_filter = ('type', 'is_active', 'created_at')
+
+    fieldsets = (
+        (None, {
+            'fields': ('username', 'email', 'password')
+        }),
+        ('Personal Information', {
+            'fields': ('first_name', 'last_name', 'location', 'tel', 'description', 'working_hours', 'file')
+        }),
+        ('Permissions and Status', {
+            'fields': ('is_active', 'is_staff', 'is_superuser')
+        }),
+        ('Important Dates', {
+            'fields': ('last_login', 'created_at')
+        }),
+        ('User Type', {
+            'fields': ('type',)
+        }),
+    )
+
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'password1', 'password2', 'type', 'is_active')
+        }),
+    )
+
+    search_fields = ('username', 'email', 'type')
+
+    ordering = ('created_at',)
+    
+admin.site.register(CustomUser, CustomUserAdmin)
+
 
 
 @admin.register(PasswordReset)
