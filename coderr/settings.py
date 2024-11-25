@@ -166,6 +166,9 @@ STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'offers_app.paginators.CustomPageNumberPagination',
+    'PAGE_SIZE': 6,  # Standard-Seitengröße
+}
