@@ -66,7 +66,41 @@ Steps<br>
    <code>python manage.py makemigrations</code><br>
    <code>python manage.py migrate</code><br><br>
 
-7. <b>Start the development server:</b><br>
+7. <b>Gunicorn Setup</b><br><br>
+
+In addition to installing the required dependencies from <code>requirements.txt</code>, you need to install Gunicorn separately for deployment:<br><br>
+
+7.1. Install Gunicorn via pip:<br>
+   <code>pip install gunicorn</code><br><br>
+
+7.2. Test running the server with Gunicorn:<br>
+   <code>gunicorn --bind 0.0.0.0:8000 coderr_backend.wsgi:application</code><br><br>
+
+7.3. Configure Gunicorn as a system service for production (optional):<br>
+   - Create a Gunicorn service file, e.g., <code>/etc/systemd/system/coderr_gunicorn.service</code>, with the following content:<br>
+   <pre>
+   [Unit]
+   Description=Gunicorn instance for Coderr Backend
+   After=network.target
+
+   [Service]
+   User=your_user
+   Group=your_group
+   WorkingDirectory=/path/to/coderr-backend
+   ExecStart=/path/to/env/bin/gunicorn --workers 3 --bind unix:/path/to/coderr-backend/coderr.sock coderr_backend.wsgi:application
+
+   [Install]
+   WantedBy=multi-user.target
+   </pre><br>
+
+7.4. Start and enable the Gunicorn service:<br>
+   <code>sudo systemctl start coderr_gunicorn</code><br>
+   <code>sudo systemctl enable coderr_gunicorn</code><br><br>
+
+This ensures Gunicorn is set up properly for production environments.
+"""
+
+8. <b>Start the development server:</b><br>
    <code>python manage.py runserver</code><br><br>
 
 ---
@@ -164,6 +198,5 @@ License<br><br>
 
 This project is licensed under the MIT License.<br>
 """
-
 
 
