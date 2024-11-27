@@ -1,91 +1,169 @@
+Coderr Backend<br><br>
 
-Coderr Backend
+The Coderr backend is a robust REST API built with Django and Django REST Framework (DRF). It supports functionalities such as user authentication, password reset, profile management, and review systems for business users.<br><br>
 
-The Coderr backend is a robust REST API built with Django and Django REST Framework (DRF). It supports functionalities such as user authentication, password reset, profile management, and review systems for business users.
+Features<br>
+- <b>User Authentication:</b><br>
+  - Login and registration with JWT-based authentication.<br>
+  - Password reset via email with secure token validation.<br>
+- <b>Profile Management:</b><br>
+  - View and edit user profiles (business and customer).<br>
+  - Separate endpoints for business and customer profiles.<br>
+- <b>Review System:</b><br>
+  - Create, view, update, and delete reviews for business profiles.<br>
+- <b>Offer Management:</b><br>
+  - Manage business offers (create, view, update).<br><br>
 
-Features
+---
 
-- User Authentication:
-  - Login and registration with JWT-based authentication.
-  - Password reset via email with secure token validation.
-- Profile Management:
-  - View and edit user profiles (business and customer).
-  - Separate endpoints for business and customer profiles.
-- Review System:
-  - Create, view, update, and delete reviews for business profiles.
-- Offer Management:
-  - Manage business offers (create, view, update).
+Installation<br><br>
 
-Installation
+Prerequisites<br>
+- Python 3.10+<br>
+- pip<br>
+- WSL 20.04 (for Windows users)<br>
+- PostgreSQL<br><br>
 
-1. Clone the repository:
-   git clone git@github.com:LukasNolting/coderr-backend.git
-   cd coderr-backend
+Steps<br>
+1. <b>Clone the repository:</b><br>
+   <code>git clone git@github.com:LukasNolting/coderr-backend.git</code><br>
+   <code>cd coderr-backend</code><br><br>
 
-2. Create a virtual environment:
-   python -m venv env
-   source env/bin/activate  # Linux/Mac
-   env\Scripts\activate     # Windows
+2. <b>Create a virtual environment:</b><br>
+   <code>python -m venv env</code><br>
+   <code>source env/bin/activate</code>  # Linux/Mac<br>
+   <code>env\\Scripts\\activate</code>  # Windows<br><br>
 
-3. Install dependencies:
-   pip install -r requirements.txt
+3. <b>Install dependencies:</b><br>
+   <code>pip install -r requirements.txt</code><br><br>
 
-4. Apply migrations:
-   python manage.py makemigrations
-   python manage.py migrate
+4. <b>Set up PostgreSQL database:</b><br>
+   - Launch WSL or your terminal and start PostgreSQL:<br>
+     <code>sudo service postgresql start</code><br>
+   - Access the PostgreSQL CLI:<br>
+     <code>sudo -u postgres psql</code><br>
+   - Create a new database:<br>
+     <code>CREATE DATABASE coderr;</code><br>
+   - Create a new user:<br>
+     <code>CREATE USER coderr_user WITH PASSWORD 'your_password';</code><br>
+   - Grant privileges:<br>
+     <code>GRANT ALL PRIVILEGES ON DATABASE coderr TO coderr_user;</code><br>
+   - Exit the PostgreSQL CLI:<br>
+     <code>\\q</code><br><br>
 
-5. Start the development server:
-   python manage.py runserver
+5. <b>Configure .env file:</b><br>
+   - Copy <code>dot_env_template</code> to <code>.env</code>.<br>
+   - Update the database section:<br>
+     <code>
+       DATABASE_NAME='coderr'<br>
+       DATABASE_USER='coderr_user'<br>
+       DATABASE_PASSWORD='your_password'<br>
+       DATABASE_HOST='localhost'<br>
+       DATABASE_PORT=5432<br>
+     </code><br><br>
 
-API Endpoints
+6. <b>Apply migrations:</b><br>
+   <code>python manage.py makemigrations</code><br>
+   <code>python manage.py migrate</code><br><br>
 
-Authentication
-- POST /login/: Authenticate users and return a token.
-- POST /registration/: Register new users.
+7. <b>Start the development server:</b><br>
+   <code>python manage.py runserver</code><br><br>
 
-Profile Management
-- GET /profile/<pk>/: Retrieve or update a user profile.
-- GET /profiles/business/: List all business profiles.
-- GET /profiles/customer/: List all customer profiles.
+---
 
-Reviews
-- GET /reviews/: List reviews with optional filters.
-- POST /reviews/: Create a new review (requires authentication).
-- GET /reviews/<id>/: Retrieve, update, or delete a specific review.
+<b>Guest Access</b><br><br>
 
-Environment Variables
+Two guest access accounts have been pre-configured for testing purposes:<br><br>
 
-Create a .env file with the following settings:
+<pre>
+const GUEST_LOGINS = {
+  customer: {
+    username: "andrey",
+    password: "asdasd",
+  },
+  business: {
+    username: "kevin",
+    password: "asdasd",
+  },
+};
+</pre><br>
 
-SECRET_KEY=your-secret-key
-DEBUG=True
-ALLOWED_HOSTS=localhost
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.example.com
+You can use these accounts to log in and test the application with pre-defined roles: Customer and Business.
+"""
+
+API Endpoints<br><br>
+
+<b>Authentication</b><br>
+- <code>POST /login/</code>: Authenticate users and return a token.<br>
+- <code>POST /registration/</code>: Register new users.<br><br>
+
+<b>Profile Management</b><br>
+- <code>GET /profile/&lt;pk&gt;/</code>: Retrieve or update a user profile.<br>
+- <code>GET /profiles/business/</code>: List all business profiles.<br>
+- <code>GET /profiles/customer/</code>: List all customer profiles.<br><br>
+
+<b>Reviews</b><br>
+- <code>GET /reviews/</code>: List reviews with optional filters.<br>
+- <code>POST /reviews/</code>: Create a new review (requires authentication).<br>
+- <code>GET /reviews/&lt;id&gt;/</code>: Retrieve, update, or delete a specific review.<br><br>
+
+Environment Variables<br><br>
+
+Create a .env file or use the template <code>dot_env_template</code> with the following settings:<br>
+<pre>
+REDIRECT_LOGIN='http://127.0.0.1:54051/login.html'
+REDIRECT_LANDING='http://127.0.0.1:54051'
+BACKEND_URL='localhost:8000'
+PROD_FRONTEND_URL=''
+
+SECRET_KEY=''
+ALLOWED_HOSTS=["127.0.0.1", "localhost"]
+CSRF_TRUSTED_ORIGINS=["http://127.0.0.1","http://localhost:4200","http://localhost:8000"]
+CORS_ALLOWED_ORIGINS=["http://127.0.0.1","http://localhost:4200","http://localhost:8000"]
+
+DATABASE_NAME='coderr'
+DATABASE_USER='postgres'
+DATABASE_PASSWORD=''
+DATABASE_HOST=''
+DATABASE_PORT=5432
+
+EMAIL_HOST=''
 EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your-email@example.com
-EMAIL_HOST_PASSWORD=your-email-password
+EMAIL_HOST_USER=''
+EMAIL_HOST_PASSWORD=''
+DEFAULT_FROM_EMAIL=''
+DOMAIN_NAME='localhost'
+</pre><br>
 
-Deployment
+---
 
-1. Set DEBUG=False in .env.
-2. Collect static files:
-   python manage.py collectstatic
-3. Configure a WSGI server (e.g., Gunicorn or uWSGI) to serve the application.
-4. Use a reverse proxy (e.g., Nginx) for improved performance.
+Deployment<br><br>
 
-Contribution
+1. Set <code>DEBUG=False</code> in .env.<br>
+2. Collect static files:<br>
+   <code>python manage.py collectstatic</code><br>
+3. Configure a WSGI server (e.g., Gunicorn or uWSGI) to serve the application.<br>
+4. Use a reverse proxy (e.g., Nginx) for improved performance.<br><br>
 
-1. Fork the repository.
-2. Create a new feature branch:
-   git checkout -b feature-name
-3. Commit your changes:
-   git commit -m "Add feature description"
-4. Push to the branch:
-   git push origin feature-name
-5. Open a pull request.
+---
 
-License
+Contribution<br><br>
 
-This project is licensed under the MIT License.
+1. Fork the repository.<br>
+2. Create a new feature branch:<br>
+   <code>git checkout -b feature-name</code><br>
+3. Commit your changes:<br>
+   <code>git commit -m "Add feature description"</code><br>
+4. Push to the branch:<br>
+   <code>git push origin feature-name</code><br>
+5. Open a pull request.<br><br>
+
+---
+
+License<br><br>
+
+This project is licensed under the MIT License.<br>
+"""
+
+
+
